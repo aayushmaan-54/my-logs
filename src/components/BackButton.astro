@@ -31,35 +31,27 @@ import { SITE } from '@/site.config';
     const currentPath = window.location.pathname;
 
     if (backUrl) {
-      // Only update if the back URL is different from current path
-      // This prevents unnecessary navigation to the same page
       if (backUrl !== currentPath) {
         backBtn.href = backUrl;
       } else {
-        // If back URL is same as current page, keep default href
         backBtn.href = '/';
       }
     }
   };
 
-  // Update on page load with a small delay to ensure storage is set
   const handlePageLoad = () => {
-    // Use requestAnimationFrame to ensure DOM is ready and other scripts have run
     requestAnimationFrame(() => {
       updateGoBackUrl();
-      // Also check again after a brief delay as a fallback
       setTimeout(updateGoBackUrl, 10);
     });
   };
 
-  // Listen for storage changes (in case it's set after initial load)
   const handleStorageChange = (e: StorageEvent) => {
     if (e.key === STORAGE_KEY && e.newValue) {
       updateGoBackUrl();
     }
   };
 
-  // Listen for custom storage events (for same-tab updates)
   const handleCustomStorageChange = () => {
     updateGoBackUrl();
   };
@@ -67,10 +59,8 @@ import { SITE } from '@/site.config';
   document.addEventListener('astro:page-load', handlePageLoad);
   window.addEventListener('storage', handleStorageChange);
 
-  // Listen for custom events that might be dispatched when storage is set
   document.addEventListener('backUrlUpdated', handleCustomStorageChange);
 
-  // Initial check with delay
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', handlePageLoad);
   } else {

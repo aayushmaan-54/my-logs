@@ -1,7 +1,8 @@
 'use strict';
+import { SITE } from '@/site.config';
 
-const THEME_STORAGE_KEY = 'log/theme';
-const FORCED_THEME = '';
+const THEME_STORAGE_KEY = SITE.browserStorage.theme;
+const FORCED_THEME = SITE.forcedTheme;
 
 let currentTheme = resolveInitialTheme();
 
