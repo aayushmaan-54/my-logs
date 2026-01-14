@@ -1,0 +1,29 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Pagination from '@/components/Pagination.astro';
+import { SITE } from '@/site.config';
+import ContentLayout from '@/layouts/ContentLayout.astro';
+import PostLink from '@/components/PostLink.astro';
+import getSortedPosts from '@/utils/content/getSortedPosts';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const shortReads = await getCollection(
+    'short_reads',
+    ({ data }) => !data.draft,
+  );
+  return paginate(getSortedPosts(shortReads), { pageSize: SITE.postPerPage });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+---
+
+<BaseLayout title='short reads'>
+  <ContentLayout pageTitle='Short Reads'>
+    <ul>
+      {page.data.map(post => <PostLink variant='h3' post={post} />)}
+    </ul>
+  </ContentLayout>
+  <Pagination {page} />
+</BaseLayout>

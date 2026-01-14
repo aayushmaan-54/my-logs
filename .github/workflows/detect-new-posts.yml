@@ -1,0 +1,59 @@
+name: Detect and Sync New Posts
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/content/writing/**/*.{md,mdx}'
+
+jobs:
+  sync-and-wait:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Get full history for reliable diffing
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          # Use github.event.before for a more robust diff than HEAD~1
+          # Filter for Added (A) and Modified (M)
+          FILES=$(git diff --name-only --diff-filter=AM ${{ github.event.before }} ${{ github.sha }} | grep -E '^src/content/writing/.*\.(md|mdx)$' || true)
+
+          if [ -z "$FILES" ]; then
+            echo "has_files=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Format as JSON array for the API call
+          JSON_FILES=$(echo "$FILES" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "files=$JSON_FILES" >> $GITHUB_OUTPUT
+          echo "has_files=true" >> $GITHUB_OUTPUT
+
+      - name: Notify App & Initialize Dispatch
+        if: steps.changed-files.outputs.has_files == 'true'
+        env:
+          INTERNAL_SYNC_SECRET: ${{ secrets.INTERNAL_SYNC_SECRET }}
+        run: |
+          curl -X POST https://yourdomain.com/api/admin/sync-posts \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $INTERNAL_SYNC_SECRET" \
+            -d '{"files": ${{ steps.changed-files.outputs.files }}}'
+
+      - name: '1-Hour Safety Buffer'
+        if: steps.changed-files.outputs.has_files == 'true'
+        run: |
+          echo "Buffer active. Cancel this workflow run in GitHub Actions to stop the email."
+          sleep 3600
+
+      - name: 'Final Broadcast Trigger'
+        if: steps.changed-files.outputs.has_files == 'true'
+        env:
+          INTERNAL_SYNC_SECRET: ${{ secrets.INTERNAL_SYNC_SECRET }}
+        run: |
+          curl -X POST https://yourdomain.com/api/internal/broadcast \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $INTERNAL_SYNC_SECRET" \
+            -d '{"files": ${{ steps.changed-files.outputs.files }}}'

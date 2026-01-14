@@ -2,16 +2,16 @@
 import PostLink from '@/components/PostLink.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { SITE } from '@/site.config';
-import getSortedPosts from '@/utils/getSortedPosts';
+import getSortedPosts from '@/utils/content/getSortedPosts';
 import { getCollection } from 'astro:content';
 
-const posts = await getCollection('blog');
+const posts = await getCollection('blogs');
+const shorts = await getCollection('short_reads');
+const allPosts = [...posts, ...shorts];
 
-const sortedPosts = getSortedPosts(posts);
+const sortedPosts = getSortedPosts(allPosts);
 const featuredPosts = sortedPosts.filter(({ data }) => data.featured);
 const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
-
-const STORAGE_KEY_BACK_URL = SITE.browserStorage.backUrl;
 ---
 
 <BaseLayout title='home'>
@@ -21,8 +21,8 @@ const STORAGE_KEY_BACK_URL = SITE.browserStorage.backUrl;
         <section id='featured' class='space-y-12'>
           <h2 class='mb-4 text-3xl font-semibold tracking-tight'>Featured</h2>
           <ul>
-            {featuredPosts.map(data => (
-              <PostLink variant='h3' {...data} />
+            {featuredPosts.map(post => (
+              <PostLink variant='h3' post={post} />
             ))}
           </ul>
         </section>
@@ -38,22 +38,13 @@ const STORAGE_KEY_BACK_URL = SITE.browserStorage.backUrl;
         </h2>
         <ul>
           {recentPosts.map(
-            (data, index) =>
-              index < SITE.postPerIndex && <PostLink variant='h3' {...data} />,
+            (post, index) =>
+              index < SITE.postPerIndex && (
+                <PostLink variant='h3' post={post} />
+              ),
           )}
         </ul>
       </section>
     )
   }
 </BaseLayout>
-
-<script is:inline define:vars={{ STORAGE_KEY_BACK_URL }}>
-  document.addEventListener('astro:page-load', () => {
-    // Always set back URL to '/' on home page
-    if (window.location.pathname === '/') {
-      sessionStorage.setItem(STORAGE_KEY_BACK_URL, '/');
-      // Dispatch custom event to notify BackButton
-      document.dispatchEvent(new CustomEvent('backUrlUpdated'));
-    }
-  });
-</script>

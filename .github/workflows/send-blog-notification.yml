@@ -1,0 +1,107 @@
+name: Delayed Newsletter Dispatcher
+on:
+  repository_dispatch:
+    types: [vercel-deploy-success]
+  workflow_dispatch:
+    inputs:
+      postId:
+        description: 'Post ID to process (e.g., blogs/my-post)'
+        required: false
+        type: string
+      action:
+        description: 'Action to perform'
+        required: false
+        type: choice
+        options:
+          - check-status
+          - cancel
+          - send-now
+        default: check-status
+
+env:
+  SITE_URL: ${{ vars.SITE_URL || 'https://yourdomain.com' }}
+
+jobs:
+  newsletter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Handle Manual Cancel
+        if: github.event.inputs.action == 'cancel' && github.event.inputs.postId != ''
+        env:
+          INTERNAL_SYNC_SECRET: ${{ secrets.INTERNAL_SYNC_SECRET }}
+        run: |
+          echo "Cancelling email for post: ${{ github.event.inputs.postId }}"
+
+          response=$(curl -s -w "\n%{http_code}" -X POST "${{ env.SITE_URL }}/api/admin/cancel-email" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $INTERNAL_SYNC_SECRET" \
+            -d '{"postId": "${{ github.event.inputs.postId }}"}')
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "Response: $body"
+          echo "HTTP Code: $http_code"
+
+          if [ "$http_code" != "200" ]; then
+            echo "::error::Failed to cancel email"
+            exit 1
+          fi
+
+          echo "✓ Email cancelled successfully for ${{ github.event.inputs.postId }}"
+
+      - name: Handle Manual Send Now
+        if: github.event.inputs.action == 'send-now' && github.event.inputs.postId != ''
+        env:
+          INTERNAL_SYNC_SECRET: ${{ secrets.INTERNAL_SYNC_SECRET }}
+        run: |
+          echo "Sending email immediately for post: ${{ github.event.inputs.postId }}"
+
+          response=$(curl -s -w "\n%{http_code}" -X POST "${{ env.SITE_URL }}/api/admin/send-now" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $INTERNAL_SYNC_SECRET" \
+            -d '{"postId": "${{ github.event.inputs.postId }}"}')
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "Response: $body"
+          echo "HTTP Code: $http_code"
+
+          if [ "$http_code" != "200" ]; then
+            echo "::error::Failed to send email"
+            exit 1
+          fi
+
+          echo "✓ Email sent immediately for ${{ github.event.inputs.postId }}"
+
+      - name: Check Post Status
+        if: github.event.inputs.action == 'check-status' && github.event.inputs.postId != ''
+        run: |
+          echo "Checking status for post: ${{ github.event.inputs.postId }}"
+
+          response=$(curl -s "${{ env.SITE_URL }}/api/email-status?postId=${{ github.event.inputs.postId }}")
+
+          echo "Status: $response"
+          echo "$response" | jq '.' || echo "$response"
+
+      - name: Info - QStash Handles Delayed Delivery
+        if: github.event_name == 'repository_dispatch' || (github.event.inputs.action == 'check-status' && github.event.inputs.postId == '')
+        run: |
+          echo "================================================"
+          echo "📧 Blog Email Notification System"
+          echo "================================================"
+          echo ""
+          echo "QStash handles delayed email delivery automatically."
+          echo "Emails are scheduled with a 1-hour delay when posts are processed."
+          echo ""
+          echo "📋 Manual Actions Available:"
+          echo "  - check-status: View the current status of a post's email"
+          echo "  - cancel: Cancel a pending email notification"
+          echo "  - send-now: Bypass the delay and send immediately"
+          echo ""
+          echo "To use, trigger this workflow manually with:"
+          echo "  - postId: The post ID (e.g., 'blogs/my-post-slug')"
+          echo "  - action: One of 'check-status', 'cancel', or 'send-now'"
+          echo ""
+          echo "================================================"

@@ -32,7 +32,7 @@ const SHOW_BUTTON_SCROLL_PERCENTAGE = SITE.showScrollAtTopAt;
     <Icon
       name='tabler:chevron-up'
       class='inline-block text-foreground-primary md:hidden'
-      size={'1.5rem'}
+      size='1.5rem'
     />
     <span
       class='sr-only flex items-center gap-1 text-sm group-hover:text-foreground-primary md:not-sr-only'
@@ -71,16 +71,10 @@ const SHOW_BUTTON_SCROLL_PERCENTAGE = SITE.showScrollAtTopAt;
       );
 
       if (window.innerWidth < 768) {
-        // To fix the "off-center" look while scaled:
-        // We use a radial gradient to create a "transparent hole" in the middle
-        // and a conic gradient behind it for the progress.
         progressIndicator.style.background = `
           radial-gradient(closest-side, transparent 78%, transparent 80%, transparent 100%),
           conic-gradient(var(--foreground-primary) ${scrollPercent}%, #e2e8f000 ${scrollPercent}%)
         `;
-
-        // Alternative: If your background is a solid color (e.g., white),
-        // change the first 'transparent 80%' to your background color to hide the inner part.
       }
 
       const isVisible =

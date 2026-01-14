@@ -1,9 +1,16 @@
-import satori from "satori";
-import { html } from "satori-html";
-import { type CollectionEntry } from "astro:content";
-import loadGoogleFontGlyphs from "@/utils/loadGoogleFontGlyphs";
+import satori from 'satori';
+import { html } from 'satori-html';
+import { type CollectionEntry } from 'astro:content';
+import loadGoogleFontGlyphs from '@/utils/text/loadGoogleFontGlyphs';
 
-export default async function generateSvg(post: CollectionEntry<"blog">) {
+export default async function generateSvg(
+  post: CollectionEntry<'blogs' | 'short_reads'>,
+) {
+  const description =
+    post.collection === 'blogs' && 'description' in post.data
+      ? post.data.description
+      : `${post.data.title} - ${post.data.pubDatetime.toLocaleDateString()}`;
+
   const markup = html` <div
     style="display: flex;"
     tw="h-[630px] w-[1200px] bg-[#f2f2f0] overflow-hidden"
@@ -28,7 +35,7 @@ export default async function generateSvg(post: CollectionEntry<"blog">) {
           style="display: flex;"
           tw="text-[28px] leading-[1.4] text-[#343b45bb]"
         >
-          ${post.data.description}
+          ${description}
         </p>
       </div>
 
@@ -47,12 +54,12 @@ export default async function generateSvg(post: CollectionEntry<"blog">) {
   </div>`;
 
   const fonts = await loadGoogleFontGlyphs(
-    "/" +
+    '/' +
       post.data.title +
-      post.data.description +
+      description +
       import.meta.env.PUBLIC_SITE_URL +
-      "By" +
-      post.data.author
+      'By' +
+      post.data.author,
   );
 
   const svg = await satori(markup, {

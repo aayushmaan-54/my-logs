@@ -12,10 +12,9 @@ interface ArrayTitleProp {
 
 export type Props = StringTitleProp | ArrayTitleProp;
 
-const { props } = Astro;
+const props = Astro.props as Props;
 
 const backUrl = SITE.showBackButton ? Astro.url.pathname : '/';
-const STORAGE_KEY_BACK_URL = SITE.browserStorage.backUrl;
 ---
 
 <main
@@ -38,14 +37,14 @@ const STORAGE_KEY_BACK_URL = SITE.browserStorage.backUrl;
   <slot />
 </main>
 
-<script is:inline define:vars={{ STORAGE_KEY_BACK_URL }}>
+<script>
+  import { SITE } from '@/site.config';
+
   document.addEventListener('astro:page-load', () => {
     const mainContent = document.querySelector('#main-content');
-    const backUrl = mainContent?.dataset?.backUrl;
+    const backUrl = mainContent?.getAttribute('data-back-url');
     if (backUrl) {
-      sessionStorage.setItem(STORAGE_KEY_BACK_URL, backUrl);
-      // Dispatch custom event to notify BackButton
-      document.dispatchEvent(new CustomEvent('backUrlUpdated'));
+      sessionStorage.setItem(SITE.browserStorage.backUrl, backUrl);
     }
   });
 </script>

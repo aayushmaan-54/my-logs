@@ -1,20 +1,20 @@
 ---
 import { SITE } from '@/site.config';
-import getUniqueTags from '@/utils/getUniqueTags';
 import type { GetStaticPathsOptions } from 'astro';
 import { getCollection } from 'astro:content';
-import getPostsByTag from '@/utils/getPostsByTag';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import ContentLayout from '@/layouts/ContentLayout.astro';
 import PostLink from '@/components/PostLink.astro';
 import Pagination from '@/components/Pagination.astro';
+import getUniqueTags from '@/utils/content/getUniqueTags';
+import getPostsByTag from '@/utils/content/getPostsByTag';
 
 export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
-  const posts = await getCollection('blog');
-  const tags = getUniqueTags(posts);
+  const blogs = await getCollection('blogs', ({ data }) => !data.draft);
+  const tags = getUniqueTags(blogs);
 
   return tags.flatMap(({ tag, tagName }) => {
-    const tagPosts = getPostsByTag(posts, tag);
+    const tagPosts = getPostsByTag(blogs, tag);
 
     return paginate(tagPosts, {
       params: { tag },
@@ -33,10 +33,9 @@ const { page, tagName } = Astro.props;
   <ContentLayout
     pageTitle={[`Tag:`, `${tagName}`]}
     titleTransition={`tag-${tag}`}
-    pageDesc={`All the articles with the tag "${tagName}".`}
   >
     <ul>
-      {page.data.map(data => <PostLink {...data} variant='h3' />)}
+      {page.data.map(post => <PostLink post={post} variant='h3' />)}
     </ul>
   </ContentLayout>
 

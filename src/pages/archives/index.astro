@@ -3,15 +3,21 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import ContentLayout from '@/layouts/ContentLayout.astro';
 import { SITE } from '@/site.config';
 import { getCollection } from 'astro:content';
-import groupPostsBy from '@/utils/groupPostsBy';
-import formatMonthDay from '@/utils/formatMonthDay';
-import { slugifyStr } from '@/utils/slugify';
+import groupPostsBy from '@/utils/content/groupPostsBy';
+import formatMonthDay from '@/utils/date/formatMonthDay';
+import { slugifyStr } from '@/utils/text/slugify';
+import getPostPath from '@/utils/content/getPostPath';
 
 if (!SITE.showArchives) {
   return Astro.redirect('/404');
 }
 
-const posts = await getCollection('blog', ({ data }) => !data.draft);
+const blogs = await getCollection('blogs', ({ data }) => !data.draft);
+const shortReads = await getCollection(
+  'short_reads',
+  ({ data }) => !data.draft,
+);
+const posts = [...blogs, ...shortReads];
 ---
 
 <BaseLayout title='archives'>
@@ -26,30 +32,41 @@ const posts = await getCollection('blog', ({ data }) => !data.draft);
             <section>
               <h2 class='mb-1 text-lg font-medium'>
                 {year}
-                <sup class='text-xs'>{yearGroup.length}</sup>
+                <sup class='ml-1 text-xs'>{yearGroup.length}</sup>
               </h2>
+
               <ul class='space-y-3'>
                 {yearGroup
                   .sort(
                     (a, b) =>
-                      Math.floor(
-                        new Date(b.data.pubDatetime).getTime() / 1000,
-                      ) -
-                      Math.floor(new Date(a.data.pubDatetime).getTime() / 1000),
+                      new Date(b.data.pubDatetime).getTime() -
+                      new Date(a.data.pubDatetime).getTime(),
                   )
                   .map(post => (
                     <li class='flex items-baseline gap-4'>
                       <time class='shrink-0 text-sm text-foreground-muted tabular-nums'>
                         {formatMonthDay(post.data.pubDatetime)}
                       </time>
+
                       <a
-                        href={`/posts/${post.id}`}
+                        href={getPostPath(
+                          post.id,
+                          post.filePath,
+                          post.collection,
+                          post.data.slug,
+                        )}
                         class='underline decoration-1 underline-offset-4 transition-colors hover:text-foreground-secondary/90'
                       >
                         <span transition:name={slugifyStr(post.data.title)}>
                           {post.data.title}
                         </span>
                       </a>
+
+                      {post.collection === 'short_reads' && (
+                        <span class='shrink-0 rounded bg-foreground-muted/20 px-2 py-0.5 text-xs font-medium'>
+                          Short Read
+                        </span>
+                      )}
                     </li>
                   ))}
               </ul>

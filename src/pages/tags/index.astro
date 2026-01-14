@@ -2,19 +2,21 @@
 import Tag from '@/components/Tag.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import ContentLayout from '@/layouts/ContentLayout.astro';
-import getUniqueTags from '@/utils/getUniqueTags';
+import getUniqueTags from '@/utils/content/getUniqueTags';
 import { getCollection } from 'astro:content';
 
-const posts = await getCollection('blog');
-let tags = getUniqueTags(posts);
+const blogs = await getCollection('blogs', ({ data }) => !data.draft);
+let tags = getUniqueTags(blogs);
 ---
 
 <BaseLayout title='tags'>
   <ContentLayout pageTitle='Tags'>
     <ul class='mt-4'>
-      {tags.map(({ tag, tagName }) => (
-        <Tag {tag} {tagName} size='lg' enableTransition={true} />
-      ))}
+      {
+        tags.map(({ tag, tagName }) => (
+          <Tag {tag} {tagName} size='lg' enableTransition={true} />
+        ))
+      }
     </ul>
   </ContentLayout>
 </BaseLayout>

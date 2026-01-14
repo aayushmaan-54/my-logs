@@ -14,7 +14,7 @@ import Header from '@/components/Header.astro';
 import Nav from '@/components/Nav.astro';
 import { SITE } from '@/site.config';
 import { PUBLIC_GOOGLE_SITE_VERIFICATION } from 'astro:env/client';
-import { ClientRouter, ViewTransitions } from 'astro:transitions';
+import { ClientRouter } from 'astro:transitions';
 
 export interface Props {
   title?: string;
@@ -71,30 +71,28 @@ const structuredData = {
     <meta charset='UTF-8' />
     <meta name='viewport' content='width=device-width' />
     <link rel='icon' type='image/svg+xml' href='/light-logo.svg' id='favicon' />
-    <script is:inline>
-      (function () {
-        const THEME_STORAGE_KEY = 'log/theme';
-        const FORCED_THEME = '';
+    <script
+      is:inline
+      define:vars={{ THEME_STORAGE_KEY: SITE.browserStorage.theme }}
+    >
+      const theme =
+        localStorage.getItem(THEME_STORAGE_KEY) ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light');
 
-        function getInitialTheme() {
-          try {
-            const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-            if (storedTheme) return storedTheme;
-            if (FORCED_THEME) return FORCED_THEME;
-            return window.matchMedia('(prefers-color-scheme: dark)').matches
-              ? 'dark'
-              : 'light';
-          } catch (e) {
-            return 'light';
-          }
-        }
+      const isDark = theme === 'dark';
+      document.documentElement.classList.toggle('dark', isDark);
 
-        const isDark = getInitialTheme() === 'dark';
-        const favicon = document.getElementById('favicon');
-        if (favicon) {
-          favicon.href = isDark ? '/light-logo.svg' : '/dark-logo.svg';
-        }
-      })();
+      const favicon = document.querySelector('link[rel="icon"]');
+      if (favicon) {
+        favicon.href = isDark ? '/light-logo.svg' : '/dark-logo.svg';
+      }
+    </script>
+
+    <script>
+      import '@/scripts/track-back-url';
+      import '@/scripts/toggle-theme';
     </script>
     <link rel='canonical' href={canonicalURL} />
 
@@ -151,7 +149,7 @@ const structuredData = {
       href={new URL('rss.xml', Astro.site)}
     />
 
-    <meta name='theme-color' content='' />
+    <meta name='theme-color' content='#ffffff' class='theme-meta' />
 
     <!-- Google Site Verification -->
     {
@@ -163,10 +161,7 @@ const structuredData = {
       )
     }
 
-    <ViewTransitions />
     <ClientRouter />
-
-    <script is:inline src='/toggle-theme.js'></script>
   </head>
   <body class='flex min-h-screen flex-col'>
     <div class='mx-auto w-full max-w-app px-4'>

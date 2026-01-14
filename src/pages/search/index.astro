@@ -1,16 +1,17 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import ContentLayout from "@/layouts/ContentLayout.astro";
-import { SITE } from "@/site.config";
+import '@pagefind/default-ui/css/ui.css';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ContentLayout from '@/layouts/ContentLayout.astro';
+import { SITE } from '@/site.config';
 
-const backUrl = SITE.showBackButton ? `${Astro.url.pathname}` : "/";
+const backUrl = SITE.showBackButton ? `${Astro.url.pathname}` : '/';
 const backUrlKey = SITE.browserStorage.backUrl;
 ---
 
-<BaseLayout title="search">
-  <ContentLayout pageTitle="Search" pageDesc="Search any post...">
+<BaseLayout title='search'>
+  <ContentLayout pageTitle='Search'>
     <div
-      id="pagefind-search"
+      id='pagefind-search'
       transition:persist
       data-backurl={backUrl}
       data-config-key={backUrlKey}
@@ -22,66 +23,63 @@ const backUrlKey = SITE.browserStorage.backUrl;
 <script>
   function initSearch() {
     const pageFindSearch: HTMLElement | null =
-      document.querySelector("#pagefind-search");
+      document.querySelector('#pagefind-search');
     if (!pageFindSearch) return;
 
     const storageKey = pageFindSearch.dataset.configKey;
     if (!storageKey) return;
 
     const params = new URLSearchParams(window.location.search);
-    const onIdle = window.requestIdleCallback || ((cb) => setTimeout(cb, 1));
+    const onIdle = window.requestIdleCallback || (cb => setTimeout(cb, 1));
 
     onIdle(async () => {
       // @ts-expect-error - pagefind has no type definitions
-      const { PagefindUI } = await import("@pagefind/default-ui");
+      const { PagefindUI } = await import('@pagefind/default-ui');
 
       if (import.meta.env.DEV) {
         pageFindSearch.innerHTML = `
-            <div class="bg-muted/75 rounded p-4 space-y-4 mb-4">
-              <p><strong>DEV mode Warning! </strong>You need to build the project at least once to see the search results during development.</p>
-              <code class="block bg-black text-white px-2 py-1 rounded">npm run build</code>
-            </div>
-          `;
+          <div class="text-sm text-error py-1 mb-6">
+            <p>Search unavailable in dev mode. Run <code class="text-foreground-primary font-mono text-xs bg-foreground-muted/20 px-1.5 py-0.5 rounded">npm run build</code> first.</p>
+          </div>
+        `;
       }
 
       const search = new PagefindUI({
-        element: "#pagefind-search",
+        element: '#pagefind-search',
         showSubResults: true,
         showImages: false,
         processTerm: function (queryParams: string) {
-          params.set("q", queryParams);
-          history.replaceState(history.state, "", "?" + params.toString());
+          params.set('q', queryParams);
+          history.replaceState(history.state, '', '?' + params.toString());
 
           const backUrl = pageFindSearch?.dataset?.backurl;
-          sessionStorage.setItem(storageKey, backUrl + "?" + params.toString());
-          // Dispatch custom event to notify BackButton
-          document.dispatchEvent(new CustomEvent('backUrlUpdated'));
+          sessionStorage.setItem(storageKey, backUrl + '?' + params.toString());
 
           return queryParams;
         },
       });
 
-      const query = params.get("q");
+      const query = params.get('q');
       if (query) {
         search.triggerSearch(query);
       }
 
-      const searchInput = document.querySelector(".pagefind-ui__search-input");
-      const clearButton = document.querySelector(".pagefind-ui__search-clear");
-      searchInput?.addEventListener("input", resetSearchParam);
-      clearButton?.addEventListener("click", resetSearchParam);
+      const searchInput = document.querySelector('.pagefind-ui__search-input');
+      const clearButton = document.querySelector('.pagefind-ui__search-clear');
+      searchInput?.addEventListener('input', resetSearchParam);
+      clearButton?.addEventListener('click', resetSearchParam);
 
       function resetSearchParam(e: Event) {
-        if ((e.target as HTMLInputElement)?.value.trim() === "") {
-          history.replaceState(history.state, "", window.location.pathname);
+        if ((e.target as HTMLInputElement)?.value.trim() === '') {
+          history.replaceState(history.state, '', window.location.pathname);
         }
       }
     });
   }
 
-  document.addEventListener("astro:after-swap", () => {
-    const pagefindSearch = document.querySelector("#pagefind-search");
-    if (pagefindSearch && pagefindSearch.querySelector("form")) return;
+  document.addEventListener('astro:after-swap', () => {
+    const pagefindSearch = document.querySelector('#pagefind-search');
+    if (pagefindSearch && pagefindSearch.querySelector('form')) return;
     initSearch();
   });
 
@@ -90,19 +88,19 @@ const backUrlKey = SITE.browserStorage.backUrl;
 
 <style is:global>
   #pagefind-search {
-    --pagefind-ui-font: var(--font-mono);
-    --pagefind-ui-text: var(--foreground);
-    --pagefind-ui-background: var(--background);
+    --pagefind-ui-font: var(--font-sans);
+    --pagefind-ui-text: var(--foreground-primary);
+    --pagefind-ui-background: var(--primary);
     --pagefind-ui-border: var(--border);
-    --pagefind-ui-primary: var(--accent);
-    --pagefind-ui-tag: var(--background);
+    --pagefind-ui-primary: var(--foreground-secondary);
+    --pagefind-ui-tag: var(--secondary);
     --pagefind-ui-border-radius: 0.375rem;
     --pagefind-ui-border-width: 1px;
     --pagefind-ui-image-border-radius: 8px;
     --pagefind-ui-image-box-ratio: 3 / 2;
 
     form::before {
-      background-color: var(--foreground);
+      background-color: var(--foreground-primary);
     }
 
     input {
@@ -111,13 +109,13 @@ const backUrlKey = SITE.browserStorage.backUrl;
     }
 
     input:focus-visible {
-      outline: 1px solid var(--accent);
+      outline: 1px solid var(--foreground-secondary);
     }
 
     .pagefind-ui__result-title a {
-      color: var(--accent);
+      color: var(--foreground-secondary);
       outline-offset: 1px;
-      outline-color: var(--accent);
+      outline-color: var(--foreground-secondary);
     }
 
     .pagefind-ui__result-title a:focus-visible,

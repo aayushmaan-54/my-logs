@@ -1,2 +1,35 @@
 site: dist
+output_path: dist/pagefind
+
 glob: "**/*.{html}"
+
+exclude_paths:
+  - "404.html"
+  - "robots.txt"
+  - "sitemap*.xml"
+  - "rss.xml"
+  - "search/**"
+  - "**/og.png"
+
+exclude_selectors:
+  - "nav"
+  - "header"
+  - "footer"
+  - "aside"
+  - "script"
+  - "template"
+  - ".no-index"
+  - ".progress-container"
+  - ".progress-bar"
+  - ".copy-code"
+  - ".code-block-wrapper"
+  - ".heading-link"
+  - ".heading-hash"
+  - "[data-astro-rerun]"
+  - "[aria-hidden='true']"
+
+force_language: "en"
+
+indexing:
+  index_headings: true
+  respect_data_pagefind_body: true

@@ -4,7 +4,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { SITE } from '@/site.config';
 import type { CollectionEntry } from 'astro:content';
-import getReadingTime from '@/utils/getReadingTime';
+import getReadingTime from '@/utils/text/getReadingTime';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -12,9 +12,9 @@ dayjs.extend(timezone);
 export interface Props {
   class?: string;
   size?: 'sm' | 'lg';
-  timezone: CollectionEntry<'blog'>['data']['timezone'];
-  pubDatetime: CollectionEntry<'blog'>['data']['pubDatetime'];
-  modDatetime: CollectionEntry<'blog'>['data']['modDatetime'];
+  timezone: CollectionEntry<'blogs' | 'short_reads'>['data']['timezone'];
+  pubDatetime: CollectionEntry<'blogs' | 'short_reads'>['data']['pubDatetime'];
+  modDatetime: CollectionEntry<'blogs' | 'short_reads'>['data']['modDatetime'];
   text: string;
 }
 

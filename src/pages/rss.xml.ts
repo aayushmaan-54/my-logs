@@ -1,21 +1,36 @@
-import rss from "@astrojs/rss";
-import { getCollection } from "astro:content";
-import { getBlogPostPath } from "@/utils/getPostPath";
-import getSortedPosts from "@/utils/getSortedPosts";
-import { SITE } from "@/site.config";
+import rss from '@astrojs/rss';
+import { getCollection } from 'astro:content';
+import { SITE } from '@/site.config';
+import getSortedPosts from '@/utils/content/getSortedPosts';
+import getPostPath from '@/utils/content/getPostPath';
 
 export async function GET() {
-  const posts = await getCollection("blog");
-  const sortedPosts = getSortedPosts(posts);
+  const posts = await getCollection('blogs');
+  const shorts = await getCollection('short_reads');
+  const allPosts = [...posts, ...shorts];
+  const sortedPosts = getSortedPosts(allPosts);
+
   return rss({
     title: SITE.title,
     description: SITE.description,
     site: SITE.website,
-    items: sortedPosts.map(({ data, id, filePath }) => ({
-      link: getBlogPostPath(id, filePath),
-      title: data.title,
-      description: data.description,
-      pubDate: new Date(data.modDatetime ?? data.pubDatetime),
-    })),
+    items: sortedPosts.map(post => {
+      const description =
+        post.collection === 'short_reads'
+          ? `Short reads: ${post.data.title} - ${post.data.pubDatetime.toLocaleDateString()}`
+          : post.data.description;
+
+      return {
+        link: getPostPath(
+          post.id,
+          post.filePath,
+          post.collection,
+          post.data.slug,
+        ),
+        title: post.data.title,
+        description,
+        pubDate: new Date(post.data.modDatetime ?? post.data.pubDatetime),
+      };
+    }),
   });
 }

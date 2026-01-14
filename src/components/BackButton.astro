@@ -10,7 +10,7 @@ import { SITE } from '@/site.config';
       href='/'
       class='flex w-fit items-center justify-start gap-1 px-2 text-foreground-primary/75 underline underline-offset-4 transition-colors hover:text-foreground-primary'
     >
-      <Icon name='tabler:chevron-left' class='size-4' />
+      <Icon name='tabler:chevron-left' />
       Go back
     </a>
   ) : null
@@ -22,27 +22,22 @@ import { SITE } from '@/site.config';
   const STORAGE_KEY = SITE.browserStorage.backUrl;
 
   const updateGoBackUrl = () => {
-    const backBtn: HTMLAnchorElement | null =
-      document.querySelector('#back-button');
+    const backBtns: NodeListOf<HTMLAnchorElement> =
+      document.querySelectorAll('#back-button');
 
-    if (!backBtn) return;
+    if (!backBtns.length) return;
 
     const backUrl = sessionStorage.getItem(STORAGE_KEY);
     const currentPath = window.location.pathname;
 
-    if (backUrl) {
-      if (backUrl !== currentPath) {
-        backBtn.href = backUrl;
-      } else {
-        backBtn.href = '/';
+    backBtns.forEach(backBtn => {
+      if (backUrl) {
+        if (backUrl !== currentPath) {
+          backBtn.href = backUrl;
+        } else {
+          backBtn.href = '/';
+        }
       }
-    }
-  };
-
-  const handlePageLoad = () => {
-    requestAnimationFrame(() => {
-      updateGoBackUrl();
-      setTimeout(updateGoBackUrl, 10);
     });
   };
 
@@ -52,18 +47,6 @@ import { SITE } from '@/site.config';
     }
   };
 
-  const handleCustomStorageChange = () => {
-    updateGoBackUrl();
-  };
-
-  document.addEventListener('astro:page-load', handlePageLoad);
+  document.addEventListener('astro:page-load', updateGoBackUrl);
   window.addEventListener('storage', handleStorageChange);
-
-  document.addEventListener('backUrlUpdated', handleCustomStorageChange);
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', handlePageLoad);
-  } else {
-    handlePageLoad();
-  }
 </script>

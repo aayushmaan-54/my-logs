@@ -6,7 +6,7 @@ const transformerFileName = (): ShikiTransformer => ({
     const raw = this.options.meta?.__raw?.split(' ');
     if (!raw) return;
 
-    const metaMap = new Map();
+    const metaMap = new Map<string, string>();
     for (const item of raw) {
       const [key, value] = item.split('=');
       if (!key || !value) continue;
@@ -20,13 +20,14 @@ const transformerFileName = (): ShikiTransformer => ({
       node,
       'mt-10 relative border border-border rounded-md rounded-tl-none shadow-sm',
     );
+
     node.children.push({
       type: 'element',
       tagName: 'span',
       properties: {
         class: [
           'absolute -top-[28px] left-0',
-          'px-4 py-1 z-10 rounded-t-md border border-b-0',
+          'px-4 py-1 z-10 rounded-t-md border border-b-0 border-border',
           'text-[11px] font-mono tracking-tight',
           'text-[var(--shiki-light)] bg-[var(--shiki-light-bg)]',
           'dark:text-[var(--shiki-dark)] dark:bg-[var(--shiki-dark-bg)]',
