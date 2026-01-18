@@ -18,6 +18,7 @@
     "@astrojs/mdx": "^4.3.13",
     "@astrojs/rss": "^4.0.14",
     "@astrojs/sitemap": "^3.6.0",
+    "@astrojs/vercel": "^9.0.4",
     "@fontsource/jetbrains-mono": "^5.2.8",
     "@fontsource/source-serif-4": "^5.2.9",
     "@iconify-json/tabler": "^1.2.25",
