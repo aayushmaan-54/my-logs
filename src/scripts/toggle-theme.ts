@@ -54,6 +54,18 @@ window
     }
   });
 
+document.addEventListener('astro:before-swap', e => {
+  const currentFavicon = document.querySelector(
+    'link[rel="icon"]',
+  ) as HTMLLinkElement;
+  const newFavicon = e.newDocument.querySelector(
+    'link[rel="icon"]',
+  ) as HTMLLinkElement;
+  if (currentFavicon && newFavicon) {
+    newFavicon.href = currentFavicon.href;
+  }
+});
+
 document.addEventListener('astro:after-swap', () => {
   applyTheme();
   setupToggle();

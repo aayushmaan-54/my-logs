@@ -1,5 +1,5 @@
 import { BLOG_PATH, SHORT_READS_PATH } from '@/content.config';
-import { slugifyStr } from './slugify';
+import { slugifyStr } from '@/utils/text/slugify';
 
 function getPostPath(
   id: string,

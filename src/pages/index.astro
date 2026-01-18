@@ -15,36 +15,38 @@ const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
 ---
 
 <BaseLayout title='home'>
-  {
-    featuredPosts.length > 0 && (
-      <>
-        <section id='featured' class='space-y-12'>
-          <h2 class='mb-4 text-3xl font-semibold tracking-tight'>Featured</h2>
+  <main>
+    {
+      featuredPosts.length > 0 && (
+        <>
+          <section id='featured' class='space-y-12'>
+            <h2 class='mb-4 text-3xl font-semibold tracking-tight'>Featured</h2>
+            <ul>
+              {featuredPosts.map(post => (
+                <PostLink variant='h3' post={post} />
+              ))}
+            </ul>
+          </section>
+        </>
+      )
+    }
+
+    {
+      recentPosts.length > 0 && (
+        <section id='recent-posts' class='pb-6'>
+          <h2 class='mb-4 text-3xl font-semibold tracking-tight'>
+            Recent Writings
+          </h2>
           <ul>
-            {featuredPosts.map(post => (
-              <PostLink variant='h3' post={post} />
-            ))}
+            {recentPosts.map(
+              (post, index) =>
+                index < SITE.postPerIndex && (
+                  <PostLink variant='h3' post={post} />
+                ),
+            )}
           </ul>
         </section>
-      </>
-    )
-  }
-
-  {
-    recentPosts.length > 0 && (
-      <section id='recent-posts' class='pb-6'>
-        <h2 class='mb-4 text-3xl font-semibold tracking-tight'>
-          Recent Writings
-        </h2>
-        <ul>
-          {recentPosts.map(
-            (post, index) =>
-              index < SITE.postPerIndex && (
-                <PostLink variant='h3' post={post} />
-              ),
-          )}
-        </ul>
-      </section>
-    )
-  }
+      )
+    }
+  </main>
 </BaseLayout>

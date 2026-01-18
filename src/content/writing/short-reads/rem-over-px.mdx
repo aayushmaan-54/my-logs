@@ -1,0 +1,21 @@
+---
+title: Stop Using px for Font Sizes
+pubDatetime: 2026-01-14T08:00:00.000+05:30
+---
+
+Use `rem` for font sizes. Here's why:
+
+`px` ignores user preferences.
+`rem` respects browser font settings.
+
+```css
+/* Bad - ignores accessibility */
+body { font-size: 16px; }
+
+/* Good - respects user settings */
+body { font-size: 1rem; }
+```
+
+Users who set larger fonts in their browser need it for a reason.
+
+Respect that.

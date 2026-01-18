@@ -1,6 +1,6 @@
 import type { CollectionEntry } from 'astro:content';
-import { slugifyStr } from './slugify';
 import isPostPublished from './isPostPublished';
+import { slugifyStr } from '../text/slugify';
 
 interface Tag {
   tag: string;

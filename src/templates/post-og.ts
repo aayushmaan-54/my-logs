@@ -2,6 +2,7 @@ import satori from 'satori';
 import { html } from 'satori-html';
 import { type CollectionEntry } from 'astro:content';
 import loadGoogleFontGlyphs from '@/utils/text/loadGoogleFontGlyphs';
+import { PUBLIC_SITE_URL } from 'astro:env/client';
 
 export default async function generateSvg(
   post: CollectionEntry<'blogs' | 'short_reads'>,
@@ -47,7 +48,7 @@ export default async function generateSvg(
           By ${post.data.author}
         </div>
         <div style="display: flex;" tw="text-[20px] text-[#6b7280]">
-          ${import.meta.env.PUBLIC_SITE_URL}
+          ${PUBLIC_SITE_URL}
         </div>
       </div>
     </div>
@@ -57,7 +58,7 @@ export default async function generateSvg(
     '/' +
       post.data.title +
       description +
-      import.meta.env.PUBLIC_SITE_URL +
+      PUBLIC_SITE_URL +
       'By' +
       post.data.author,
   );

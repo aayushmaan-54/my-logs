@@ -13,3 +13,5 @@
 !.prettierrc
 !eslint.config.js
 !README.md
+*.md
+*.mdx

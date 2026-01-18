@@ -9,7 +9,7 @@
   --border: #e0e0e0;
   --foreground-primary: #1f2227;
   --foreground-secondary: #343b45;
-  --foreground-muted: #6b7280;
+  --foreground-muted: #4b5563;
   --error: #a1334b;
   --success: #33a147;
 }
@@ -20,7 +20,7 @@
   --border: #1f2430;
   --foreground-primary: #e5e4e3;
   --foreground-secondary: #a7aebb;
-  --foreground-muted: #7b8190;
+  --foreground-muted: #9ca3af;
   --error: #c73a58;
   --success: #3fc457;
 }

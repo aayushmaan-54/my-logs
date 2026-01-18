@@ -1,0 +1,267 @@
+---
+title: Test tempelate
+author: Aayushmaan Soni
+slug: test-template
+pubDatetime: 2026-01-18T00:10:31.000+05:30
+featured: false
+draft: false
+tags: ["testing", "template", "mdx", "blog"]
+description: "Testing template for mdx"
+ogImage: "https://placehold.co/1200x630?text=OG+Image"
+---
+
+## Table of Contents
+
+##  1. Headings
+# H1
+
+## H2
+
+### H3
+
+#### H4
+
+##### H5
+
+###### H6
+
+## 2. Text Formatting
+**Bold**\
+*Italic*\
+***Bold + Italic***\
+~~Strikethrough~~\
+`Inline code`\
+<kbd>Alt</kbd>+<kbd>F4</kbd> for  secret message
+
+## 3. Lists
+### Unordered Lists
+- Item 1
+- Item 2
+- Item 3
+  - Item 3.1
+  - Item 3.2
+    - Item 3.2.1
+    - Item 3.2.2
+
+### Ordered Lists
+1. Item 1
+2. Item 2
+3. Item 3
+   1. Item 3.1
+   2. Item 3.2
+      1. Item 3.2.1
+      2. Item 3.2.2
+
+### Task Lists
+- [x] Task 1
+- [ ] Task 2
+- [ ] Task 3
+
+## 4. Links
+[Best website in world](https://www.aayushmaan.me)\
+[Best website in world](https://openai.com "Open this")\
+Internal navigation: [Go to the headings section](#1-headings)
+
+## 5. Images
+![OG Image](https://picsum.photos/id/1015/1200/630)
+![OG Image](https://picsum.photos/seed/picsum/536/354 "Main OG Image")
+<img src="/og-image.png" alt="OG Image" />
+<figure>
+  <img src="https://picsum.photos/seed/picsum/536/354" alt="Test Image" />
+  <figcaption>Figure 1: This is a caption testing the alignment and font size of image descriptions.</figcaption>
+</figure>
+
+## 6. Code Blocks
+### Inline
+`console.log("Hello World")`
+
+### Block
+```ts file="app.ts"
+// [!code highlight:4]
+interface Config {
+  port: number;
+  host: string;
+}
+
+function createServer(config: Config): void {
+  // [!code --:1]
+  console.log(`Starting server on ${config.host}:${config.port}`);
+  // [!code ++:1]
+  console.log(`🚀 Server running at ${config.host}:${config.port}`);
+}
+```
+
+```typescript
+// Test for overflow and line highlighting
+const veryLongVariableNameThatMightBreakTheLayoutOnMobileDevicesIfNotHandledCorrectlyWithOverflowScroll = "test";
+```
+
+## 7. Tables
+| Name | Age |
+|------|-----|
+| A    | 20  |
+| B    | 22  |
+
+| Left Align | Center Align | Right Align |
+| :--- | :----: | ---: |
+| Short | This is a much longer cell to test wrapping | $100.00 |
+
+## 8. Blockquotes
+> This is a quote
+
+> Quote
+>> Nested quote
+
+## 9. Horizontal Rule
+---
+
+## 10. Details
+<details>
+  <summary>Click to expand</summary>
+  Hidden content that reveals on interaction. Useful for optional details, code examples, or supplementary information that shouldn't clutter the main flow.
+</details>
+
+## 11. Footnotes
+This statement needs a citation[^1]. Here's another reference[^2].
+[^1]: First footnote with supporting information.
+[^2]: Second footnote providing additional context.
+
+## 12. Callouts (Custom MDX Components)
+<Callout type="note">
+  Notes provide contextual information without interrupting the reading flow.
+</Callout>
+
+<Callout type="tip">
+  Tips highlight helpful suggestions or best practices.
+</Callout>
+
+<Callout type="warning">
+  Warnings draw attention to potential issues or important caveats.
+</Callout>
+
+<Callout type="info">
+  Informational callouts provide helpful tips or additional context.
+</Callout>
+
+## 13. HTML inside MDX (Allowed)
+<div>
+  <p>This is standard HTML rendered inside MDX.</p>
+  <button onclick="alert('HTML works!')">Click Me</button>
+</div>
+
+## 14. Emojis (subtle use)
+
+This is acceptable 🙂\
+This is not 🚀🔥💯❌
+
+## 15. Math (LaTeX)
+Inline math:
+$E = mc^2$
+$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$
+
+Display math:
+$$
+\frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+$$
+
+$$ \int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi} $$
+
+$$
+\begin{aligned}
+\nabla \cdot \mathbf{E} &= \frac{\rho}{\varepsilon_0} \\
+\nabla \cdot \mathbf{B} &= 0 \\
+\nabla \times \mathbf{E} &= -\frac{\partial \mathbf{B}}{\partial t} \\
+\nabla \times \mathbf{B} &= \mu_0\left(\mathbf{J} + \varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}\right)
+\end{aligned}
+$$
+
+## 16. Embeds
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/embed/ZK1pNGmNBEc"
+  title="YouTube video player"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen
+></iframe>
+
+## 17. Typography & Rhythm
+### Abbreviations & Fine Print
+The <abbr title="HyperText Markup Language">HTML</abbr> specification is maintained by the <abbr title="World Wide Web Consortium">W3C</abbr>. This ensures that tags like <section> </section> and <article> </article> are standardized. We also need to check small text: <small>Copyright © 2026 Aayushmaan Soni. All rights reserved. This is small print used for legal disclaimers.</small>
+
+### Deep List Nesting (Level 5)
+1. Level 1
+   1. Level 2
+      1. Level 3
+         1. Level 4
+            1. Level 5
+               1. Level 6
+               1. Level 6
+            1. Level 4
+         1. Level 3
+      1. Level 2
+   1. Level 1
+<br/>
+- Level 1: Main Topic
+  - Level 2: Sub-topic
+    - Level 3: Detail
+      - Level 4: Specific point
+        - Level 5: The "Inception" level - is this still readable?
+        - Level 5: Another deep point.
+      - Level 4: Back up one.
+    - Level 3: Back up two.
+
+### Long Paragraph (Readability & Line Height)
+This block tests your `line-height` and `margin-bottom` between paragraphs. A good "reading rhythm" usually requires a `line-height` of 1.5 to 1.7.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\
+Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis risus a elit. Etiam tempor. Ut ullamcorper, ligula eu tempor congue, eros est euismod turpis, id tincidunt sapien risus a quam. Maecenas fermentum consequat mi. Donec fermentum. Pellentesque malesuada nulla a mi. Duis sapien sem, aliquet nec, commodo eget, consequat quis, neque. Aliquam faucibus, elit ut dictum aliquet, felis nisl adipiscing sapien, sed malesuada diam lacus eget erat. Cras mollis scelerisque nunc. Nullam arcu. Aliquam consequat. Curabitur augue lorem, dapibus quis, laoreet et, pretium ac, nisi. Aenean magna nisl, mollis quis, molestie eu, feugiat in, orci. In hac habitasse platea dictumst.
+This statement needs <Tooltip note="This is the explanation that appears on hover.">some context</Tooltip> to be understood.\
+The algorithm has O(n²) complexity <Tooltip note="Quadratic time complexity means the execution time grows proportionally to the square of the input size.">which can be problematic</Tooltip> for large datasets.
+
+### Mixed Content Density
+Testing how a *bold phrase* followed by a `code tag` and a [Link](https://www.aayushmaan.me) looks when crammed into a single line of text to ensure the "line-box" doesn't jump in height.
+<br />
+Note on Density: Here is a line with **Strong Text**, *Italic Text*, `inline-code`, and a [Link](https://www.aayushmaan.me) all in one sentence to see if the vertical spacing remains consistent.
+
+## 18. Definition Lists
+Term 1
+: Definition 1
+
+Term 2
+: Definition 2
+
+## 19. Superscript and Subscript
+X^2^ or X<sup>2</sup>
+H~2~O or H<sub>2</sub>O
+
+## 20. Escape Characters
+\*Not italic\* \[Not a link\]
+
+## 21. Line Breaks
+Line 1
+Line 2 (two spaces at end)
+
+Line 1\
+Line 2 (backslash)
+
+<Mermaid code={`
+  graph TD;
+    A[Start] --> B[Process]
+    B --> C[End]
+`} />
+<br />
+<Mermaid code={`
+  graph TD;
+    A-->B;
+    B-->C;
+`} />
+
+## 23. Auto-linked URLs
+https://www.example.com (without brackets)
+
+## 24. Comments
+{/* This is a comment that shouldn't render */}
+
+## 25. HTML Entities
+&copy; &reg; &trade; &amp; &lt; &gt; &quot; &apos;

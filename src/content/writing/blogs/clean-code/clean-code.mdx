@@ -1,0 +1,36 @@
+---
+title: The Art of Writing Clean Code
+author: Aayushmaan Soni
+pubDatetime: 2026-01-14T09:00:00.000+05:30
+draft: false
+tags: ["clean-code", "best-practices", "programming"]
+description: "Key principles for writing code that's easy to read, maintain, and extend."
+---
+
+Clean code isn't about being clever—it's about being **clear**.
+
+## The KISS Principle
+
+Keep It Simple, Stupid. The simplest solution is often the best solution.
+
+## Meaningful Names
+
+```typescript
+// Bad
+const d = new Date();
+const x = users.filter(u => u.a > 18);
+
+// Good
+const currentDate = new Date();
+const adultUsers = users.filter(user => user.age > 18);
+```
+
+## Single Responsibility
+
+Each function should do one thing and do it well. If you can't describe what a function does without using "and", it's doing too much.
+
+## Small Functions
+
+If a function is longer than 20-30 lines, consider breaking it apart. Your future self will thank you.
+
+Remember: **Code is read far more often than it is written.**

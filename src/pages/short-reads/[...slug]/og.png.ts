@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import generateOgImageForPost from '@/utils/seo/generateOgImageForPost';
 import { SITE } from '@/site.config';
-import getPostPath from '@/utils/getPostPath';
+import getPostPath from '@/utils/content/getPostPath';
 
 export async function getStaticPaths() {
   if (!SITE.dynamicOgImage) return [];

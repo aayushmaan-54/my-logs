@@ -1,31 +1,31 @@
 ---
-import Link from "@/components/Link.astro";
-import BaseLayout from "@/layouts/BaseLayout.astro";
+import Link from '@/components/Link.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="404" showNav={false}>
+<BaseLayout title='404' showNav={false}>
   <main
-    class="font-mono flex flex-col items-center justify-center min-h-[70vh] px-4"
+    class='flex min-h-[70vh] flex-col items-center justify-center px-4 font-mono'
   >
     <pre
-      class="whitespace-pre m-0 mb-8 text-sm md:text-base">
+      class='m-0 mb-8 text-sm whitespace-pre md:text-base'>
 <span class="text-error font-bold">[ERROR] 404</span>
 Entry not found in logs.
 
 [ x ] entry removed <span class="cursor">▌</span>
     </pre>
 
-    <nav class="flex items-center gap-4">
+    <nav class='flex items-center gap-4'>
       <Link
-        href="/archive"
-        class="decoration-1 underline underline-offset-8 hover:text-accent transition-colors"
+        href='/archives'
+        class='hover:text-accent underline decoration-1 underline-offset-8 transition-colors'
       >
         View Archive
       </Link>
-      <span class="text-text-muted" aria-hidden="true">·</span>
+      <span class='text-text-muted' aria-hidden='true'>·</span>
       <Link
-        href="/"
-        class="decoration-1 underline underline-offset-8 hover:text-accent transition-colors"
+        href='/'
+        class='hover:text-accent underline decoration-1 underline-offset-8 transition-colors'
       >
         Go Home
       </Link>

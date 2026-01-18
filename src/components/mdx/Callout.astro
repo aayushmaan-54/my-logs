@@ -1,0 +1,89 @@
+---
+type CalloutType = 'note' | 'tip' | 'warning' | 'info';
+
+interface Props {
+  type?: CalloutType;
+  title?: string;
+}
+
+const { type = 'note', title } = Astro.props;
+
+const calloutStyles: Record<
+  CalloutType,
+  { icon: string; borderColor: string; bgColor: string; titleColor: string }
+> = {
+  note: {
+    icon: '📝',
+    borderColor: 'var(--border)',
+    bgColor: 'var(--secondary)',
+    titleColor: 'var(--foreground-primary)',
+  },
+  tip: {
+    icon: '💡',
+    borderColor: 'var(--success)',
+    bgColor: 'color-mix(in srgb, var(--success) 10%, var(--primary))',
+    titleColor: 'var(--success)',
+  },
+  warning: {
+    icon: '⚠️',
+    borderColor: 'var(--error)',
+    bgColor: 'color-mix(in srgb, var(--error) 10%, var(--primary))',
+    titleColor: 'var(--error)',
+  },
+  info: {
+    icon: 'ℹ️',
+    borderColor: 'var(--foreground-secondary)',
+    bgColor:
+      'color-mix(in srgb, var(--foreground-secondary) 8%, var(--primary))',
+    titleColor: 'var(--foreground-secondary)',
+  },
+};
+
+const style = calloutStyles[type];
+---
+
+<div
+  class='callout my-4 rounded border-l-2 px-4 py-3'
+  style={`border-color: ${style.borderColor}; background-color: ${style.bgColor};`}
+>
+  <div class='flex gap-3'>
+    <span class='shrink-0 text-xl leading-6' aria-hidden='true'>
+      {style.icon}
+    </span>
+    <div class='flex-1'>
+      {
+        title && (
+          <p class='mb-1.5 font-semibold' style={`color: ${style.titleColor};`}>
+            {title}
+          </p>
+        )
+      }
+      <div
+        class='prose-callout text-sm'
+        style='color: var(--foreground-muted);'
+      >
+        <slot />
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .prose-callout :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .prose-callout :global(p:first-child) {
+    margin-top: 0;
+  }
+
+  .prose-callout :global(ul),
+  .prose-callout :global(ol) {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .prose-callout :global(code) {
+    font-size: 0.875em;
+  }
+</style>

@@ -1,0 +1,83 @@
+---
+const { code } = Astro.props;
+---
+
+<div class='mermaid-diagram' data-code={code}>
+  <div class='loading animate-pulse text-sm text-foreground-secondary'>
+    Loading diagram...
+  </div>
+</div>
+
+<script>
+  async function initMermaid() {
+    const elements = document.querySelectorAll('.mermaid-diagram');
+    if (elements.length === 0) return;
+
+    const { default: mermaid } = await import('mermaid');
+
+    const isDark = document.documentElement.classList.contains('dark');
+    const theme = isDark ? 'dark' : 'default';
+
+    mermaid.initialize({ startOnLoad: false, theme });
+
+    for (const element of elements) {
+      const code = element.getAttribute('data-code');
+      if (!code) continue;
+
+      try {
+        const id = 'mermaid-' + Math.random().toString(36).substring(2, 9);
+        const { svg } = await mermaid.render(id, code);
+        element.innerHTML = svg;
+      } catch (error) {
+        console.error('Mermaid render error:', error);
+        element.innerHTML = `<p class="text-error">Invalid Syntax</p>`;
+      }
+    }
+  }
+
+  function setupLazyMermaid() {
+    const diagrams = document.querySelectorAll('.mermaid-diagram');
+    if (diagrams.length === 0) return;
+
+    let mermaidLoaded = false;
+
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && !mermaidLoaded) {
+            mermaidLoaded = true;
+            initMermaid();
+            observer.disconnect();
+          }
+        });
+      },
+      { rootMargin: '100px' },
+    );
+
+    diagrams.forEach(diagram => observer.observe(diagram));
+  }
+
+  function setupThemeObserver() {
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        if (mutation.attributeName === 'class') {
+          const diagrams = document.querySelectorAll(
+            '.mermaid-diagram[data-rendered]',
+          );
+          if (diagrams.length > 0) {
+            initMermaid();
+          }
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+  }
+
+  setupLazyMermaid();
+  setupThemeObserver();
+
+  document.addEventListener('astro:after-swap', () => {
+    setupLazyMermaid();
+  });
+</script>

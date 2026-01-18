@@ -1,0 +1,48 @@
+---
+title: Git Commands I Use Daily
+author: Aayushmaan Soni
+pubDatetime: 2026-01-13T14:30:00.000+05:30
+draft: false
+tags: ["git", "tools", "workflow"]
+description: "Essential Git commands that have become part of my daily development workflow."
+---
+
+After years of using Git, these commands have become second nature.
+
+## The Essentials
+
+```bash
+# See what's changed
+git status
+git diff
+
+# Stage and commit
+git add -p  # Interactive staging
+git commit -m "feat: add new feature"
+
+# Sync with remote
+git pull --rebase
+git push
+```
+
+## Undoing Mistakes
+
+```bash
+# Unstage files
+git reset HEAD file.js
+
+# Undo last commit (keep changes)
+git reset --soft HEAD~1
+
+# Discard local changes
+git checkout -- file.js
+```
+
+## Pro Tips
+
+- Use `git stash` liberally
+- Write meaningful commit messages
+- Rebase before merging feature branches
+- Use `.gitignore` from the start
+
+These commands cover 95% of my daily Git usage.

@@ -1,0 +1,56 @@
+---
+interface Props {
+  note: string;
+}
+
+const { note } = Astro.props;
+---
+
+<span class='relative inline-block'>
+  <span
+    class='tooltip-trigger group relative inline-flex cursor-help items-baseline border-b border-dotted border-foreground-muted'
+  >
+    <slot /><span
+      class='mr-0.5 ml-0.5 align-super text-[0.75em] opacity-60'
+      aria-hidden='true'>*</span
+    >
+
+    <span
+      class='tooltip-content pointer-events-none invisible absolute bottom-full left-1/2 z-50 mb-2 w-max max-w-80 -translate-x-1/2 rounded-md border border-border bg-secondary px-3 py-2 text-left text-[0.8125rem] leading-relaxed text-foreground-primary opacity-0 shadow-lg transition-[opacity,visibility] duration-150 group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100 max-sm:fixed max-sm:right-4 max-sm:bottom-4 max-sm:left-4 max-sm:mb-0 max-sm:w-auto max-sm:max-w-none max-sm:translate-x-0'
+      role='tooltip'
+    >
+      {note}
+    </span>
+  </span>
+</span>
+
+<style>
+  .tooltip-content::before,
+  .tooltip-content::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-style: solid;
+    border-color: transparent;
+  }
+
+  .tooltip-content::before {
+    border-width: 6px;
+    border-top-color: var(--border);
+  }
+
+  .tooltip-content::after {
+    margin-top: -1px;
+    border-width: 5px;
+    border-top-color: var(--secondary);
+  }
+
+  @media (max-width: 640px) {
+    .tooltip-content::before,
+    .tooltip-content::after {
+      display: none;
+    }
+  }
+</style>

@@ -1,21 +1,21 @@
 /** @type {import("prettier").Config} */
 export default {
-  arrowParens: "avoid",
+  arrowParens: 'avoid',
   semi: true,
   tabWidth: 2,
   printWidth: 80,
   singleQuote: true,
   jsxSingleQuote: true,
-  trailingComma: "all",
+  trailingComma: 'all',
   bracketSpacing: true,
-  endOfLine: "lf",
-  plugins: ["prettier-plugin-astro", "prettier-plugin-tailwindcss"],
-  tailwindStylesheet: "./src/styles/global.css",
+  endOfLine: 'lf',
+  plugins: ['prettier-plugin-astro', 'prettier-plugin-tailwindcss'],
+  tailwindStylesheet: './src/styles/global.css',
   overrides: [
     {
-      files: "*.astro",
+      files: '*.astro',
       options: {
-        parser: "astro",
+        parser: 'astro',
       },
     },
   ],

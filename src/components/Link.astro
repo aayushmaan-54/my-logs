@@ -11,7 +11,7 @@ export interface Props {
 const {
   id,
   href,
-  class: className = "",
+  class: className = '',
   ariaLabel,
   title,
   disabled = false,
@@ -22,7 +22,7 @@ const {
   disabled ? (
     <span
       id={id}
-      class:list={["group", className]}
+      class:list={['group', className]}
       title={title}
       aria-disabled={disabled}
     >
@@ -33,7 +33,7 @@ const {
       id={id}
       {href}
       class:list={[
-        "group text-foreground-primary/75 hover:text-foreground-primary transition-colors",
+        'group text-foreground-primary/75 transition-colors hover:text-foreground-primary',
         className,
       ]}
       aria-label={ariaLabel}

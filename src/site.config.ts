@@ -1,3 +1,5 @@
+const PUBLIC_SITE_URL = import.meta.env.PUBLIC_SITE_URL;
+
 interface Social {
   name: string;
   href: string;
@@ -6,9 +8,9 @@ interface Social {
 }
 
 export const SITE = {
-  website: import.meta.env.PUBLIC_SITE_URL,
+  website: PUBLIC_SITE_URL,
   author: 'Aayushmaan Soni',
-  profile: 'https://wwww.aayushmaan.me',
+  profile: 'https://www.aayushmaan.me',
   title: 'My Logs.',
   description:
     'A personal log for thoughts, ideas, and lessons that feel worth writing down.',
@@ -29,36 +31,37 @@ export const SITE = {
   editPost: {
     enabled: true,
     text: 'Edit page',
-    url: 'https://github.com/aayushmaan-45/my-logs/edit/main/',
+    url: 'https://github.com/aayushmaan-54/my-logs/edit/main/',
   },
   dynamicOgImage: true,
   dir: 'ltr', // "rtl" | "auto"
   lang: 'en',
   timezone: 'Asia/Kolkata', // Timezone (IANA format) https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  twitterHandle: '@aayushmaan5oni',
 } as const;
 
 export const SOCIALS: readonly Social[] = [
   {
     name: 'GitHub',
-    href: 'https://github.com/satnaing/astro-paper',
+    href: 'https://github.com/aayushmaan-54/my-logs',
     linkTitle: `My GitHub`,
     icon: 'tabler:brand-github',
   },
   {
     name: 'X',
-    href: 'https://x.com/username',
+    href: 'https://x.com/aayushmaan5oni',
     linkTitle: `My X`,
     icon: 'tabler:brand-x',
   },
   {
     name: 'LinkedIn',
-    href: 'https://www.linkedin.com/in/username/',
+    href: 'https://www.linkedin.com/in/aayushmaan54/',
     linkTitle: `My LinkedIn`,
     icon: 'tabler:brand-linkedin',
   },
   {
     name: 'Mail',
-    href: 'mailto:yourmail@gmail.com',
+    href: 'mailto:aayushmaansoni.dev@gmail.com',
     linkTitle: `Send an email to me`,
     icon: 'tabler:brand-gmail',
   },

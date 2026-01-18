@@ -9,6 +9,8 @@ import '@fontsource/jetbrains-mono/500';
 import '@fontsource/jetbrains-mono/600';
 
 import '@/styles/global.css';
+import 'katex/dist/katex.min.css';
+
 import Footer from '@/components/Footer.astro';
 import Header from '@/components/Header.astro';
 import Nav from '@/components/Nav.astro';
@@ -27,6 +29,8 @@ export interface Props {
   modDatetime?: Date | null;
   scrollSmooth?: boolean;
   showNav?: boolean;
+  section?: 'blogs' | 'short-reads' | string;
+  isDraft?: boolean;
 }
 
 const {
@@ -40,25 +44,41 @@ const {
   modDatetime,
   scrollSmooth = true,
   showNav = true,
+  section,
+  isDraft = false,
 } = Astro.props;
 
+const pageTitle = section
+  ? `logs / ${section} / ${title?.toLowerCase()}`
+  : `logs / ${title?.toLowerCase()}`;
+
 const socialImageURL = new URL(ogImage, Astro.url);
+
+const sanitizeForJson = (str: string | undefined): string => {
+  if (!str) return '';
+  return str
+    .replace(/[<>]/g, '')
+    .replace(/[\u0000-\u001F\u007F]/g, '')
+    .trim();
+};
 
 const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
-  headline: `${title}`,
-  image: `${socialImageURL}`,
-  datePublished: `${pubDatetime?.toISOString()}`,
+  headline: sanitizeForJson(title),
+  image: socialImageURL.href,
+  datePublished: pubDatetime?.toISOString() ?? '',
   ...(modDatetime && { dateModified: modDatetime.toISOString() }),
   author: [
     {
       '@type': 'Person',
-      name: `${author}`,
+      name: sanitizeForJson(author),
       ...(profile && { url: profile }),
     },
   ],
 };
+
+const shouldNoIndex = isDraft && import.meta.env.DEV;
 ---
 
 <!doctype html>
@@ -71,6 +91,9 @@ const structuredData = {
     <meta charset='UTF-8' />
     <meta name='viewport' content='width=device-width' />
     <link rel='icon' type='image/svg+xml' href='/light-logo.svg' id='favicon' />
+
+    {shouldNoIndex && <meta name='robots' content='noindex, nofollow' />}
+
     <script
       is:inline
       define:vars={{ THEME_STORAGE_KEY: SITE.browserStorage.theme }}
@@ -97,17 +120,21 @@ const structuredData = {
     <link rel='canonical' href={canonicalURL} />
 
     <!-- General Meta Tags -->
-    <title>logs / {title}</title>
+    <title>{pageTitle}</title>
     <meta name='title' content={title} />
     <meta name='description' content={description} />
     <meta name='author' content={author} />
     <link rel='sitemap' href='/sitemap-index.xml' />
 
     <!-- Open Graph / Facebook -->
+    <meta property='og:type' content='article' />
     <meta property='og:title' content={title} />
     <meta property='og:description' content={description} />
     <meta property='og:url' content={canonicalURL} />
     <meta property='og:image' content={socialImageURL} />
+
+    <!-- Article Author URL in Open Graph -->
+    {profile && <meta property='article:author' content={profile} />}
 
     <!-- Article Published/Modified time -->
     {
@@ -133,8 +160,19 @@ const structuredData = {
     <meta property='twitter:title' content={title} />
     <meta property='twitter:description' content={description} />
     <meta property='twitter:image' content={socialImageURL} />
+    <!-- Twitter @creator handle -->
+    {
+      SITE.twitterHandle && (
+        <meta name='twitter:creator' content={SITE.twitterHandle} />
+      )
+    }
+    {
+      SITE.twitterHandle && (
+        <meta name='twitter:site' content={SITE.twitterHandle} />
+      )
+    }
 
-    <!-- Google JSON-LD Structured data -->
+    <!-- Google JSON-LD Structured data (sanitized) -->
     <script
       type='application/ld+json'
       is:inline

@@ -13,6 +13,10 @@
       @apply mb-3 font-semibold text-foreground-primary;
     }
 
+    dt {
+      @apply mb-0! font-semibold text-foreground-primary;
+    }
+
     h3 {
       @apply italic;
     }
@@ -37,6 +41,24 @@
 
     li {
       @apply marker:text-foreground-muted;
+    }
+
+    ol:not(.footnotes ol) {
+      counter-reset: item;
+      list-style: none;
+    }
+
+    ol:not(.footnotes ol) > li {
+      counter-increment: item;
+    }
+
+    ol:not(.footnotes ol) > li::before {
+      content: counters(item, '.') '. ';
+      @apply font-semibold text-foreground-muted;
+    }
+
+    .footnotes ol {
+      list-style: decimal;
     }
 
     hr {
@@ -109,6 +131,40 @@
     .heading-link:hover .heading-hash {
       @apply underline;
     }
+
+    input[type='checkbox'] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 1em;
+      height: 1em;
+      border: 2px solid var(--foreground-muted);
+      border-radius: 3px;
+      background: transparent;
+      vertical-align: middle;
+      position: relative;
+      cursor: default;
+    }
+
+    input[type='checkbox']:checked {
+      background: var(--foreground-secondary);
+      border-color: var(--foreground-secondary);
+    }
+
+    input[type='checkbox']:checked::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 45%;
+      width: 0.25em;
+      height: 0.5em;
+      border: solid var(--primary);
+      border-width: 0 2px 2px 0;
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+
+    .contains-task-list {
+      @apply list-none ps-0;
+    }
   }
 
   /* ===== Code Blocks & Syntax Highlighting ===== */
@@ -140,4 +196,12 @@
       @apply rounded-sm border border-border px-0.5 py-px;
     }
   }
+}
+
+.prose .katex-display {
+  @apply text-foreground-primary;
+}
+
+.app-prose dd {
+  @apply mt-0! mb-1;
 }
