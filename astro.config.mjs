@@ -86,6 +86,11 @@ export default defineConfig({
         context: 'client',
         optional: true,
       }),
+      DATABUDDY_CLIENT_ID: envField.string({
+        access: 'public',
+        context: 'client',
+        optional: true,
+      }),
       PUBLIC_SITE_URL: envField.string({
         access: 'public',
         context: 'client',
@@ -97,9 +102,5 @@ export default defineConfig({
     preserveScriptOrder: true,
   },
 
-  adapter: vercel({
-    webAnalytics: {
-      enabled: true,
-    },
-  }),
+  adapter: vercel(),
 });

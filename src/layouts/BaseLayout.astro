@@ -12,12 +12,15 @@ import '@/styles/global.css';
 import 'katex/dist/katex.min.css';
 
 import Footer from '@/components/Footer.astro';
+import Databuddy from '@/components/Databuddy.astro';
 import Header from '@/components/Header.astro';
 import Nav from '@/components/Nav.astro';
 import { SITE } from '@/site.config';
-import { PUBLIC_GOOGLE_SITE_VERIFICATION } from 'astro:env/client';
+import {
+  PUBLIC_GOOGLE_SITE_VERIFICATION,
+  DATABUDDY_CLIENT_ID,
+} from 'astro:env/client';
 import { ClientRouter } from 'astro:transitions';
-import SpeedInsights from '@vercel/speed-insights/astro';
 
 export interface Props {
   title?: string;
@@ -127,8 +130,6 @@ const shouldNoIndex = isDraft && import.meta.env.DEV;
     <meta name='author' content={author} />
     <link rel='sitemap' href='/sitemap-index.xml' />
 
-    <SpeedInsights />
-
     <!-- Open Graph / Facebook -->
     <meta property='og:type' content='article' />
     <meta property='og:title' content={title} />
@@ -138,6 +139,9 @@ const shouldNoIndex = isDraft && import.meta.env.DEV;
 
     <!-- Article Author URL in Open Graph -->
     {profile && <meta property='article:author' content={profile} />}
+
+    <!-- Databuddy Analytics -->
+    <Databuddy websiteId={DATABUDDY_CLIENT_ID} />
 
     <!-- Article Published/Modified time -->
     {
