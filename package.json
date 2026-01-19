@@ -27,7 +27,6 @@
     "astro": "^5.16.6",
     "astro-icon": "^1.1.5",
     "dayjs": "^1.11.19",
-    "mermaid": "^11.12.2",
     "rehype-external-links": "^3.0.0",
     "remark-collapse": "^0.1.2",
     "remark-definition-list": "^2.0.0",
