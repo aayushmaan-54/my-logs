@@ -1,16 +1,20 @@
 ---
 export interface Props {
-  websiteId: string;
+  websiteId: string | undefined;
 }
 
 const { websiteId } = Astro.props;
 ---
 
-<script
-  is:inline
-  defer
-  src='https://cdn.databuddy.cc/databuddy.js'
-  crossorigin='anonymous'
-  async
-  data-client-id={websiteId}
-></script>
+{
+  websiteId && (
+    <script
+      is:inline
+      defer
+      src='https://cdn.databuddy.cc/databuddy.js'
+      crossorigin='anonymous'
+      async
+      data-client-id={websiteId}
+    />
+  )
+}
