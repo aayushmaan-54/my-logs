@@ -42,5 +42,5 @@ Nothing here is set in stone. I change my mind. That's fine.
 
 ## Contact
 
-**Socials:** if you know, you know
+**Socials:** if you know, you know  
 **Email:** aayushmaansoni.dev@gmail.com

@@ -10,6 +10,7 @@ import { Icon } from 'astro-icon/components';
 import { SITE } from '@/site.config';
 import { slugifyStr } from '@/utils/text/slugify';
 import getPostPath from '@/utils/content/getPostPath';
+import { components } from '@/components/mdx';
 
 export interface Props {
   post: CollectionEntry<'short_reads'>;
@@ -126,7 +127,7 @@ const layoutProps = {
       id='article'
       class='app-prose mx-auto mt-8 max-w-app prose-pre:bg-(--shiki-light-bg) dark:prose-pre:bg-(--shiki-dark-bg)'
     >
-      <Content />
+      <Content components={components} />
     </article>
 
     <hr class='my-8 border-dashed' />

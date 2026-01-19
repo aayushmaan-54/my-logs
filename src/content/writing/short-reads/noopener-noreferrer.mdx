@@ -1,0 +1,25 @@
+---
+title: Why rel="noopener noreferrer" matters
+author: Aayushmaan Soni
+slug: /external-link-security
+pubDatetime: 2026-01-20T02:08:46.000+05:30
+featured: true
+draft: false
+---
+
+Ever wondered why many websites add `rel="noopener noreferrer"` to their external links? Let's dive into the reasons behind this practice and why it's essential for web security.
+
+When you create a link that opens in a new tab using `target="_blank"`, the new page has access to the original page's `window` object through `window.opener`. This can lead to potential security vulnerabilities, such as:
+- `window.opener.location = "https://phishing-site.com";`, which can redirect the original page to a malicious site without the user's consent. This is known as a **tabnabbing attack**.
+- The new page can manipulate the original page's content, potentially leading to data theft or other malicious activities.
+- When we click on external links, the browser automatically sends the `Referer` header, which contains the URL of the original page. This can inadvertently expose sensitive information to third-party sites, like if url contains user-specific data or session tokens.
+
+To mitigate these risks, adding `rel="noopener noreferrer"` to your links is a best practice:
+
+## What ``rel="noopener"`` does
+It cuts the connection between the original page and the new page, preventing the new page from accessing the `window.opener` property. This means that the new page cannot manipulate.
+
+## What about ``rel="noreferrer"``?
+It does two things:
+- Prevents sending the `Referer` header when navigating to the new page, which can help protect user privacy.
+- Also includes the functionality of `noopener` in modern browsers, ensuring that the new page cannot access the `window.opener` property.

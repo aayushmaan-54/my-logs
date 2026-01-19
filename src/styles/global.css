@@ -53,11 +53,11 @@
 }
 
 @utility max-w-app {
-  @apply max-w-2xl;
+  @apply max-w-3xl;
 }
 
 @utility w-app {
-  @apply w-2xl;
+  @apply w-3xl;
 }
 
 :target {

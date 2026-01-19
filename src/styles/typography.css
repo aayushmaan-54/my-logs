@@ -89,7 +89,7 @@
     }
 
     code {
-      @apply rounded border border-border bg-primary p-1 wrap-break-word text-foreground-primary before:content-none after:content-none;
+      @apply rounded border border-border bg-secondary p-1 wrap-break-word text-foreground-primary before:content-none after:content-none;
     }
 
     .astro-code code {
