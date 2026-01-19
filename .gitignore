@@ -27,3 +27,6 @@ pnpm-debug.log*
 # pagefind
 public/pagefind
 public/_pagefind
+
+# Vercel Builds
+.vercel

@@ -17,7 +17,6 @@ import { loadEnv } from 'vite';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { remarkDefinitionList } from 'remark-definition-list';
-import vercel from '@astrojs/vercel';
 
 const { PUBLIC_SITE_URL } = loadEnv(process.env.NODE_ENV, process.cwd(), '');
 
@@ -101,6 +100,4 @@ export default defineConfig({
   experimental: {
     preserveScriptOrder: true,
   },
-
-  adapter: vercel(),
 });

@@ -12,6 +12,12 @@ const { websiteId } = Astro.props;
       is:inline
       defer
       src='https://cdn.databuddy.cc/databuddy.js'
+      data-track-hash-changes='true'
+      data-track-outgoing-links='true'
+      data-track-interactions='true'
+      data-track-scroll-depth='true'
+      data-track-web-vitals='true'
+      data-track-errors='true'
       crossorigin='anonymous'
       async
       data-client-id={websiteId}
