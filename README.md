@@ -30,7 +30,6 @@ A minimal, fast, and beautiful personal blog — built for clarity, not clutter.
 | 📄 **Pagination** | Clean, numbered pagination for blog listings |
 | 🔒 **Type-Safe** | End-to-end TypeScript with validated frontmatter schemas |
 | ⚙️ **Configurable** | Single `site.config.ts` file to control entire site behavior |
-| 📝 **LaTeX Equations** | Full math equation support powered by KaTeX |
 | 📋 **Definition Lists** | Native Markdown definition list support |
 | 📊 **Mermaid Diagrams** | Create flowcharts, sequence diagrams, and more |
 
@@ -50,7 +49,6 @@ A minimal, fast, and beautiful personal blog — built for clarity, not clutter.
 | **Syntax Highlighting** | [Shiki](https://shiki.matsu.io) with custom transformers |
 | **Dates** | [Day.js](https://day.js.org) |
 | **Linting** | ESLint, Prettier |
-| **Latex** | [KaTeX](https://katex.org) |
 | **Mermaid** | [Mermaid](https://mermaid.live) |
 
 ---

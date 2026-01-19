@@ -198,10 +198,6 @@
   }
 }
 
-.prose .katex-display {
-  @apply text-foreground-primary;
-}
-
 .app-prose dd {
   @apply mt-0! mb-1;
 }

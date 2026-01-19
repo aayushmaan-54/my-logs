@@ -14,8 +14,6 @@ import remarkToc from 'remark-toc';
 import rehypeExternalLinks from 'rehype-external-links';
 import remarkCollapse from 'remark-collapse';
 import { loadEnv } from 'vite';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
 import { remarkDefinitionList } from 'remark-definition-list';
 
 const { PUBLIC_SITE_URL } = loadEnv(process.env.NODE_ENV, process.cwd(), '');
@@ -36,7 +34,6 @@ export default defineConfig({
     remarkPlugins: [
       [remarkToc, { maxDepth: 3, tight: true }],
       [remarkCollapse, { test: 'Table of contents' }],
-      remarkMath,
       remarkDefinitionList,
     ],
     rehypePlugins: [
@@ -48,7 +45,6 @@ export default defineConfig({
           content: { type: 'text', value: ' ↗' },
         },
       ],
-      rehypeKatex,
     ],
     remarkRehype: {
       handlers: (await import('remark-definition-list')).defListHastHandlers,
