@@ -31,7 +31,6 @@ A minimal, fast, and beautiful personal blog — built for clarity, not clutter.
 | 🔒 **Type-Safe** | End-to-end TypeScript with validated frontmatter schemas |
 | ⚙️ **Configurable** | Single `site.config.ts` file to control entire site behavior |
 | 📋 **Definition Lists** | Native Markdown definition list support |
-| 📊 **Mermaid Diagrams** | Create flowcharts, sequence diagrams, and more |
 
 ---
 
@@ -49,7 +48,6 @@ A minimal, fast, and beautiful personal blog — built for clarity, not clutter.
 | **Syntax Highlighting** | [Shiki](https://shiki.matsu.io) with custom transformers |
 | **Dates** | [Day.js](https://day.js.org) |
 | **Linting** | ESLint, Prettier |
-| **Mermaid** | [Mermaid](https://mermaid.live) |
 
 ---
 
