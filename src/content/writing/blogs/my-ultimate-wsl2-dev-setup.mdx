@@ -1,0 +1,404 @@
+---
+title: My Ultimate WSL2 Dev Setup!
+author: Aayushmaan Soni
+slug: my-ultimate-wsl2-dev-setup
+pubDatetime: 2026-02-01T14:49:37.000+05:30
+featured: true
+draft: false
+tags: ["setup", "git", "wsl", "zsh", "linux", "github", "windows"]
+description: A complete guide to setup Windows as a powerful Linux dev machine
+---
+
+## Table of Contents
+
+## Introduction
+Ever felt limited while coding on Windows?
+Like things work, but not in the smooth way you see Linux users working.  
+At the same time, switching to Linux full-time is hard because some software only runs on Windows, or you're into gaming like me, and Windows still has the best support for that (typical Microsoft stuff).  
+That's where **WSL2** comes in.  
+In this blog, I'll show you how to set up **WSL2** to run Linux inside Windows, configure **ZSH** to make your terminal cleaner and more powerful, and set up multiple **GitHub SSH keys** so you can easily manage different accounts.  
+This setup gives you the best of both worlds.  
+Linux for development and Windows for everything else(especially gaming :&lt;). 
+
+## Installing WSL2 
+Before installing **WSL2** on your Windows machine, there are a few things you need to have:
+- Windows 10 (Build 19041+) or Windows 11 (Obviously)
+- Administrator access
+- Virtualization enabled in BIOS/UEFI (Follow any tutorial its pretty easy)
+- Windows terminal
+- VS Code (env-var should exsist & install wsl extension by Microsoft)
+
+### Installing WSL2 & Ubuntu
+Open **PowerShell as Administrator** and run:
+
+```bash
+wsl --install
+``` 
+
+This command will:
+- Enable WSL feature
+- Enable Virtual Machine Platform
+- Install Ubuntu (default distro)
+- Set WSL2 as default version
+
+Restart your computer when prompted.  
+After restart terminal will automatically open **ubuntu** in **WSL2** and you will be prompted to create *username* and *password* remember them well as it will be helpful in future.  
+Few Commands to remember for WSL2 that might be helpful
+
+```bash
+# Start WSL
+wsl
+
+# See available distributions
+wsl --list --online
+
+# Start specific destro
+wsl -d Ubuntu-24.04
+
+# Check WSL version
+wsl --version
+
+# Install Ubuntu 24.04 LTS
+wsl --install -d Ubuntu-24.04
+
+# Uninstall Ubuntu 24.04 LTS
+wsl --unregister Ubuntu-24.04
+
+# Stop all WSL instance (Very useful when WSL feel buggy)
+wsl --shutdown
+
+# Set WSL default distro
+wsl --set-default Ubuntu
+
+# Update WSL
+wsl --update
+```
+
+If you face problem installing WSL you can also install it via **Microsoft Store** but i would recommend install it via *CLI* as it gives more control and you know better what is going on.
+
+#### Updating Linux
+After setting up username and password you will be inside ubuntu next you need to update ubuntu sourcelist and upgrade the distro with updated list
+```bash
+sudo apt update && sudo apt upgrade -y
+```
+Enter your password when prompted
+ 
+You can create a `.wslconfig` file where you can allocate WSL resources such as memory, storage or processor.
+
+#### Installing Oh My Zsh (Optional but Recommended)
+A clean, step-by-step guide to transforming your terminal with Zsh, Powerlevel10k, and essential plugins.  
+
+Inside Ubuntu, follow these steps.
+
+##### Install Nerd Fonts
+For the icons and symbols in the theme to render correctly, you need a Nerd Font installed.  
+**Download and Extract:**
+```bash
+mkdir temp && cd temp
+
+curl -L -o Meslo.zip https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/Meslo.zip
+
+unzip Meslo.zip -d MesloFonts
+```
+
+**Install Fonts to System:**
+```bash
+sudo mkdir -p /usr/share/fonts/truetype/meslo-nerd
+
+sudo cp MesloFonts/*.ttf /usr/share/fonts/truetype/meslo-nerd/
+
+sudo fc-cache -fv
+```
+
+**Cleanup:**
+```bash
+cd .. && rm -rf temp
+```
+
+> **Note:** After running these, go to your Terminal Settings and set the font to **MesloLGS NF**.
+
+##### 2. Install Zsh and Git
+First, ensure your package manager is up to date and install the requirements.
+```bash
+sudo apt update
+sudo apt install zsh git -y
+```
+
+**Set Zsh as Default:**
+```bash
+chsh -s $(which zsh)
+```
+*Note: You may need to log out and back in (or restart WSL) for this to take effect.*
+
+##### 3. Install Oh My Zsh
+Run the official installation script:
+
+```bash
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+```
+
+##### 4. Install Powerlevel10k Theme
+Clone the repository into the Oh My Zsh custom themes folder:
+
+```bash
+git clone --depth=1 https://github.com/romkatv/powerlevel10k.git${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+```
+
+**Activate Theme:**
+Open your `.zshrc` file:
+```bash
+nano ~/.zshrc
+```
+
+Find `ZSH_THEME="robbyrussell"` and change it to:
+```bash
+ZSH_THEME="powerlevel10k/powerlevel10k"
+```
+
+##### 5. Add Productivity Plugins
+These plugins add "fish-like" autosuggestions and syntax highlighting.
+
+```bash
+# Autosuggestions
+git clone https://github.com/zsh-users/zsh-autosuggestions${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+
+# Syntax Highlighting
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+
+# History Substring Search
+git clone https://github.com/zsh-users/zsh-history-substring-search${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-history-substring-search
+```
+
+##### 6. Finalize Configuration
+Update your plugin list in `~/.zshrc`:
+
+```bash
+plugins=(
+  git
+  zsh-autosuggestions
+  zsh-syntax-highlighting
+  zsh-history-substring-search
+)
+```
+
+**Apply Changes:**
+```bash
+source ~/.zshrc
+```
+
+If the Powerlevel10k configuration wizard doesn't start automatically, run:
+```bash
+p10k configure
+```
+
+#### Install Essential Development Tools
+Inside Ubuntu:
+```bash
+# Git
+sudo apt install git -y
+
+#Build essentials
+sudo apt install build-essential -y
+
+# Install Node.js, Docker(Might need to do some config for WSL), Python, MongoDB(Compass, MongoShell, mongodb-database-tools): Just Google these they are pretty simple and too the point
+``` 
+
+## WSL File structure
+In WSL Windows drives are mounted at `/mnt/`:
+
+```bash
+cd /mnt/c/Users/YourUsername
+```
+
+To access your linux distro files you can either type this in address bar of windows explorer
+
+```bash
+\\wsl.localhost\
+```
+
+Or you can see Linux on left side sidebar you can go from there also
+
+## Setting up WSL distro as default terminal
+To set your linux distro as your default terminal profile:
+`Settings → Startup → Default profile → Ubuntu`  
+Customize Ubuntu profile
+- Settings → Profiles → Ubuntu-24.04
+- Set starting directory: `\\wsl.localhost\Ubuntu\home\YourUsername`
+- Customize appearance, colors, fonts, etc.
+
+## Git Multiple Account Setup
+In this section, we'll set up multiple Git identities (office and personal) using SSH in a way that **does not require changing the clone command every time**.  
+Normally, when using multiple SSH keys, you have to clone repositories like this:
+```bash
+git@git-office:username/repository.git
+```
+This works, but it's annoying to remember and easy to mess up.
+In this setup, we'll configure SSH so that you can simply run:
+```bash
+git@github.com:username/repository.git
+```
+…and Git will automatically use the correct SSH key based on where the project is located.  
+No aliases.  
+No custom clone commands.  
+No manual switching.  
+
+### Folder Rule (Important)
+To make this work smoothly, we'll follow one simple rule:
+- All office projects will live inside `~/office/` (or any folder of your choice)
+- Everything outside this folder will be treated as personal work
+- Before following [Setup](#setup) make sure you have office project directory and use that thorughout
+
+Based on this, Git will automatically pick the correct identity and SSH key.
+
+### Setup
+#### 1. Generate SSH Keys
+```bash
+ssh-keygen -t ed25519 -C "personal@gmail.com"
+# Save as: /home/USERNAME/.ssh/id_personal
+
+ssh-keygen -t ed25519 -C "office@company.com"
+# Save as: /home/USERNAME/.ssh/id_office
+```
+
+#### 2. Set Permissions
+```bash
+chmod 600 ~/.ssh/id_personal ~/.ssh/id_office
+```
+
+#### 3. Add keys to SSH Agent
+```bash
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_personal
+ssh-add ~/.ssh/id_office
+```
+
+#### 4. Configure SSH
+```bash
+nano ~/.ssh/config
+```
+
+Add:
+
+```bash
+# Personal GitHub
+Host github-personal
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_personal
+    AddKeysToAgent yes
+
+# Work GitHub
+Host github-office
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_office
+    AddKeysToAgent yes
+```
+
+#### 5. Add Public Keys to GitHub
+```bash
+cat ~/.ssh/id_personal.pub  # Copy to personal GitHub account
+cat ~/.ssh/id_office.pub    # Copy to work GitHub account
+```
+
+Add these public keys to each github account (Settings → SSH and GPG Keys → New SSH Keys)
+
+#### 6. Test Connections
+```bash
+ssh -T git@github-personal
+ssh -T git@github-office
+```
+
+#### 7. Setup Git Configs
+Personal Config (default):
+```bash
+nano ~/.gitconfig
+```
+
+Add:
+
+```bash
+[user]
+    name = Your Name
+    email = personal@gmail.com
+
+[url "git@github-personal:"]
+    insteadOf = git@github.com:
+
+[url "git@github-personal:"]
+    insteadOf = https://github.com/
+
+[includeIf "gitdir:/home/USERNAME/office/"]
+    path = /home/USERNAME/.gitconfig-office
+```
+
+<Callout type="warning">
+Path in `includeIf` must end with `/`
+</Callout>
+
+Work Config:
+```bash
+nano ~/.gitconfig-office
+```
+
+Add:
+
+```bash
+[user]
+    name = Your Name
+    email = office@company.com
+
+[url "git@github-office:"]
+    insteadOf = git@github.com:
+
+[url "git@github-office:"]
+    insteadOf = https://github.com/
+```
+
+#### 8. Verify Setup
+To verify your whole setup make sure you are first inside your personal project folder where git is initialized or is git repository run `git config user.email` and you should see your personal email and in your office project directory you should do same and you will see office email.
+
+## Working with WSL in VS Code
+After installing WSL and the WSL extension in VS Code, the next step is using it the right way.  
+A common mistake is opening projects from the Windows filesystem and assuming they are running in WSL.  
+That's not true.   
+To properly use WSL, your project must live **inside the Linux filesystem**, not inside `C:`.  
+
+### Open a Project in WSL
+1. Open VS Code  
+2. Press `Ctrl + Shift + P`  
+3. Search for `WSL: Open Folder in WSL`  
+4. Select a folder inside Linux  
+
+Once opened, you'll see **WSL: Ubuntu** in the bottom-left corner.
+
+### Alternative Way
+You can also open a project directly from the WSL terminal:
+```bash
+cd ~/.../your-project
+code .
+```
+
+### Important Note
+Avoid working inside:  
+```
+/mnt/c/Users/...
+```
+
+Always work inside:
+
+```
+/home/your-username/
+```
+
+Working from Windows folders slows things down and can cause permission issues.  
+Also, always commit your code before experimenting with WSL.
+If something breaks, recovery can be difficult.
+
+## Conclusion
+With this setup, you get the best of both worlds.  
+The power of Linux for development, and the flexibility of Windows for software that still needs it, including modern games.  
+This is the exact setup I use daily. It lets me work comfortably without having to compromise on development quality or give up things I enjoy, like gaming.  
+One small request to software vendors and game studios:  
+please give the same level of priority to Linux as you do to Windows. A lot of developers want to move, but support is still the biggest blocker.  
+Until then, WSL is the perfect middle ground.
