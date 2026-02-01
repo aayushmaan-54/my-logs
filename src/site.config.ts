@@ -14,7 +14,7 @@ export const SITE = {
   title: 'My Logs.',
   description:
     'A personal log for thoughts, ideas, and lessons that feel worth writing down.',
-  ogImage: 'og-image.png',
+  ogImage: 'og.png',
   lightAndDarkMode: true,
   browserStorage: {
     backUrl: 'my-logs/back-url',
