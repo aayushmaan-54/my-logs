@@ -1,0 +1,199 @@
+---
+title: Understanding Kubernetes Architecture
+author: Aayushmaan Soni
+slug: k8s-architecture
+pubDatetime: 2026-03-15T09:00:10.000+05:30
+featured: true
+tags: ["k8s", "architecture", "devops", "containers"]
+description: Kubernetes or K8s or Kubes Architecture explained!
+timezone: Asia/Kolkata
+---
+
+import k8sArch from './assets/kubernetes-architecture.svg';
+
+## Table of Contents
+
+## Introduction
+Kubernetes architecture can feel confusing at first because it includes many components and a lot of terminology. In this blog, we will first understand the common terms used in Kubernetes and then explore the architecture step-by-step to see how all the components work together as a system.
+
+## What is Kubernetes
+Kubernetes aka `k8s` aka `kubes` is an open-source platform designed to automate deployment, scaling, and management of containerized applications.  
+Originally created by Google but is now an independent, open-source project maintained by a global community and hosted by the Cloud Native Computing Foundation (CNCF). Google does not own Kubernetes anymore; it is a vendor-neutral project.  
+It is used for **Container Orchestration**, **Self Healing**, **Scaling**, **Automated Rollouts & Rollbacks**, **Load Balancing**, ...  
+A confusion you might have is that it is used for orchestrating & managing Docker images, but it turns out that is not the case — it is not made specifically for Docker but for images that follow the OCI image standard, and Docker happens to follow it. Podman and Buildah are other examples that support OCI images and are therefore supported by K8s.
+
+### Components of Kubernetes
+Before understanding the full architecture, we will first understand the main components.  
+Trying to understand the entire architecture at once can be overwhelming, so it is easier to first learn the building blocks and then see how they work together.
+
+### Kubernetes Cluster
+A **Cluster** is a group of machines (called **nodes**) that work together to run containerized applications.  
+A cluster can run multiple instances (**replicas**) of an application to provide **scalability and high availability**.  
+In real-world setups, companies often run multiple clusters for different environments such as `testing`, `staging`, `pre-production`, and `production`. In some cases, **namespaces** are used instead of separate clusters for environment separation.
+
+### Control Plane
+The **Control Plane** (formerly called the *master node*) is responsible for managing the Kubernetes cluster.  
+It stores the **desired state** of the system. For example, if you specify that an application should run with **3 replicas**, Kubernetes records this as the desired state.  
+The control plane continuously monitors the **current state** of the cluster and tries to ensure it matches the desired state.  
+Kubernetes works on the **desired state vs current state model**.  
+The control plane does **not run application workloads itself**. Instead, it manages the cluster and schedules workloads to run on worker nodes.
+
+### Worker Nodes
+**Worker Nodes** (often simply called **nodes**) are the machines where applications actually run.
+They provide resources such as:
+- CPU  
+- Memory  
+- Networking  
+- Storage  
+
+Each node can run **multiple pods at the same time** depending on available resources.
+
+### Pods
+A **Pod** is the **smallest deployable unit in Kubernetes**.  
+It provides a runtime environment for **one or more containers**.  
+Containers inside a pod share:
+- The **same IP address**
+- The **same network namespace**
+- **Shared storage volumes**
+- The **same lifecycle**
+
+Kubernetes scales **pods**, not containers, because a pod represents a **complete runtime instance of an application**.  
+Most pods run **a single container**, but Kubernetes allows **multiple containers inside a pod** when they need to work closely together.  
+For example:
+- A main application container
+- A sidecar container for logging, monitoring, or proxying
+
+These containers share the same lifecycle and resources, so they start, stop, and scale together.
+
+## Architecture of K8s
+Now we will look in detail at how the different components in Kubernetes interact with each other.  
+By the end of this section, you will have a clear understanding of how Kubernetes works internally and how each component collaborates to manage applications.  
+Below is an architecture diagram of Kubernetes. I recommend opening it in a new tab and referring to it while reading this section. Doing so will make it much easier to understand how the system works and how the different components interact with each other.
+
+<figure>
+  <img 
+    src={k8sArch.src} 
+    alt="Kubernetes architecture diagram" 
+  />
+  <figcaption>
+    Kubernetes Architecture - Source: 
+    <a href="https://kubernetes.io/docs/concepts/architecture/" target="_blank">
+      Kubernetes Documentation
+    </a>
+  </figcaption>
+</figure>
+
+### Control Plane
+It is used to manage worker nodes.  
+It has the following components:
+
+- **Kube API Server**: The only component that you and other components talk to. It is the API layer for all communication. Whenever you run any CLI commands, they make HTTPS requests to this API server.
+- **etcd**: A distributed *key-value database*. It stores cluster config, info, state, secrets, node info, and more. If it goes down, the cluster will forget everything. The **Kube API Server** continuously reads and writes data here.
+- **Scheduler**: When a pod gets created, it has no node assigned. The scheduler's job is to assign the best node according to hardware conditions and requirements. It does not run containers — it assigns them a place to run.
+- **Controller Manager**: This component runs many controllers. Each controller watches the cluster and enforces desired state. For example:
+  - Deployment controller → ensures replicas exist
+  - Node controller → detects dead nodes
+  - Endpoint controller → tracks pod IPs
+
+  All controllers work on the same principle:
+```
+  Watch cluster state
+  Compare to desired state
+  Fix differences
+  Repeat forever
+```
+  This is what makes Kubernetes self-healing.
+
+- **Cloud Controller Manager** *(optional, cloud environments only)*: This exists only when running Kubernetes on cloud providers. It connects Kubernetes to cloud APIs. Without it, Kubernetes would not know how to talk to AWS/GCP/Azure. In bare-metal clusters, this component may not exist.
+
+#### How the Control Plane works together
+When you deploy something:
+1. Request hits the API Server
+2. API Server writes desired state to etcd
+3. Controller Manager notices the new workload
+4. Scheduler picks a node
+5. Assignment is stored back via the API Server
+6. Worker node executes
+
+The control plane never runs your app.
+It just continuously **decides what reality should be**.
+
+### Worker Nodes
+Worker nodes actually run your apps.  
+A worker node is just a machine that:
+- Receives instructions from the control plane
+- Runs pods
+- Reports health back
+
+A worker node has 3 components:
+
+- **Kubelet**: An agent running on every node. It's what turns a normal machine into a Kubernetes node.  
+  Its job:
+  - Talk to the API Server
+  - Receive pod specs
+  - Ensure containers are running
+  - Restart them if they crash
+  - Report status back
+
+- **Container Runtime**: Kubernetes does not know how to run containers itself, so it uses a container runtime that does.  
+  This is the component that actually:
+  - Pulls images
+  - Creates containers
+  - Isolates them
+  - Starts processes
+
+  **A brief history — why Docker was removed:**  
+  Originally, Kubernetes used the Docker runtime directly. But Docker did not implement the CRI (Container Runtime Interface) standard. So Kubernetes created `dockershim` as a translation layer, but it added extra complexity and maintenance overhead. As a result, Kubernetes removed it in **v1.24**. Docker can no longer be used directly as a runtime.  
+
+  Docker still works *indirectly*, however, because Docker internally uses:
+```
+  Docker
+    ↓
+  containerd
+    ↓
+  runc
+```
+
+  **CRI (Container Runtime Interface)**: A standard API created by Kubernetes so that different runtimes can plug in seamlessly.
+
+  **High-level CRI runtimes** (these implement CRI directly):
+  - `containerd` — Originally created by Docker, now a CNCF project. `nerdctl` is the Docker-compatible CLI for `containerd`.
+  - `cri-o` — Created by Red Hat for the OpenShift ecosystem. It is lightweight and minimal. Widely used in production environments.
+
+  **Low-level / specialized runtimes** (these sit below containerd/cri-o and talk directly to the Linux kernel):
+  - `runc` — The default OCI runtime used by both `containerd` and `cri-o`. Handles networking, space allocation, process starting, etc.
+  - `crun` — Another OCI runtime, written in C. Offers faster startup and lower memory usage than `runc`.
+  - `kata containers` — Used when you want extra isolation. Runs containers inside lightweight VMs.
+  - `gVisor` — A sandbox runtime from Google that provides an extra security layer between the container and the host kernel.
+
+  **Full runtime stack:**
+```
+  Kubernetes
+    ↓
+  CRI plugin
+    ↓
+  containerd / cri-o
+    ↓
+  runc / crun / kata / gVisor
+    ↓
+  containers
+```
+
+- **Kube Proxy**: Pods come and go constantly, and their IPs change — but services need a stable address.  
+  Kube Proxy runs on each node and handles:
+  - Routing traffic to the right pod
+  - Load balancing across pod replicas
+  - Updating iptables/IPVS rules
+
+#### How these three work together on a node
+When the control plane schedules a pod to a node:
+1. API Server updates state
+2. Kubelet sees the new pod assigned to it
+3. Kubelet asks the runtime to pull the image and start the container
+4. Runtime launches the container using kernel isolation
+5. Kube Proxy updates networking so traffic can reach it
+
+Boom - pod running.
+
+## Conclusion
+Kubernetes may seem complex at first, but once you understand how each component — from the Control Plane to the Kubelet — plays its role, the whole system starts to make a lot of sense.
