@@ -1,0 +1,447 @@
+---
+title: RBAC Implementation Strategy From Simple Role Checks to Production-Scale Authorization
+author: Aayushmaan Soni
+pubDatetime: 2026-03-18T22:28:49.000+05:30
+featured: true
+tags: ["rbac", "authorization", "security", "backend", "production"]
+description: A progressive guide for implementing Role-Based Access Control (RBAC) in applications, covering pros and cons of each approach, and implementaion using pseudo code for better understanding.
+timezone: Asia/Kolkata
+---
+
+## Table of Contents
+
+## Introduction
+At some point, every backend system hits this question:
+> “Who is allowed to do what?”
+
+Most apps start with simple checks like `isAdmin`, but as the system grows, this quickly becomes messy and hard to maintain.  
+This is where **Role-Based Access Control (RBAC)** comes in - controlling access based on user roles.  
+But roles aren't always enough.  
+Sometimes access depends on things like ownership, department, or environment — which leads to **Attribute-Based Access Control (ABAC)**.  
+In this post, we'll go from simple role checks to production-scale authorization systems, exploring where RBAC works, where it breaks, and how to design something that actually scales.
+
+## Simple hardcoded role checks
+This is the most basic and commonly used form of authorization.  
+In this approach, a `role` (e.g., `admin`, `user`) is stored directly in the database. On the backend, authorization is handled by applying middleware to routes, where each route specifies the required role. The middleware extracts the user's role from the token and performs a simple comparison.  
+On the frontend, the role is often included in the token or user state, and access control is implemented using conditional checks (`if-else`) to show or hide UI elements.
+
+### Pros
+- Very simple to implement  
+- Works well for small systems with 2-3 roles  
+- Easy to understand and debug  
+
+### Cons
+- Authorization logic gets scattered across routes and components  
+- Becomes hard to manage as the number of roles increases  
+- Adding dynamic roles or permissions leads to messy and overengineered logic  
+- Cannot easily support fine-grained or attribute-based access (e.g., time, location, ownership)  
+- This model answers **Who are you?** but not **What you are allwed to do?**.
+ 
+## Permission based RBAC
+This is one of the most commonly used authorization approaches for mid-sized applications where simple role checks are no longer sufficient & appliation is not RBAC heavy.  
+In this approach, each role is assigned a set of permissions:
+```typescript
+admin = ["*"] // or all permissions
+editor = ["post:create", "post:edit"]
+viewer = ["post:read"]
+```
+In the database, we typically store the user's role. Permissions are then derived using a role-permission mapping.   
+On the backend, authorization is handled by applying middleware to routes, where each route specifies the required permission. The middleware resolves the user's permissions (via role) from the token and checks whether the required permission is present.  
+On the frontend, permissions are often included in the token or user state, and access control is implemented using conditional checks (`if-else`) to show or hide UI elements.
+
+### Pros
+- More flexible than simple role checks
+- Enables fine-grained access control (per action)
+- Roles become easier to manage as collections of permissions
+- Reduces the need to create new roles for every small change
+- Decouples identity (role) from capability (permissions)
+
+### Cons
+- Authorization logic can still become scattered across the codebase
+- Managing role-permission mappings becomes complex at scale
+- Still lacks context-awareness (e.g., ownership, time, location)
+- Cannot easily express rules like: *"user can edit only their own post"*
+
+## Bitmask Permission-Based RBAC
+This approach is more optimized for performance and storage, especially when dealing with a large number of permissions. In this approach, we assign a unique bit position to each permission and represent role permissions as a bitmask (integer). For example:
+```typescript
+const PERMISSIONS = {
+  CREATE_POST: 1 << 0, // 1
+  EDIT_POST: 1 << 1,   // 2
+  DELETE_POST: 1 << 2, // 4
+  READ_POST: 1 << 3    // 8
+};
+```
+
+We can then represent a role as a combination of permissions using the bitwise OR operator:
+```typescript
+const ROLES = {
+  ADMIN: PERMISSIONS.CREATE_POST | PERMISSIONS.EDIT_POST | PERMISSIONS.DELETE_POST | PERMISSIONS.READ_POST, // 15
+  EDITOR: PERMISSIONS.CREATE_POST | PERMISSIONS.EDIT_POST | PERMISSIONS.READ_POST, // 11
+  VIEWER: PERMISSIONS.READ_POST // 8
+};
+```
+
+On the backend, authorization is handled by applying middleware to routes, where each route specifies its required permission as a bitmask (using a readable bit-to-permission mapping). The middleware resolves the user's permissions from their token and performs a bitwise AND to check whether the required permission is present:
+```typescript
+(userPermissions & requiredPermission) !== 0
+```
+
+Because each permission occupies a unique bit position, a non-zero result from the AND operation means the user holds that permission. In other words, if `userPermissions` and `requiredPermission` share any common permission bit, the result will be non-zero (truthy).  
+On the frontend, the backend can send derived boolean flags such as `canView` or `canEdit`, computed from these bitmask checks. Access control is then implemented using simple conditional checks to show or hide UI elements accordingly.
+
+### Pros
+- More efficient storage and faster permission checks (bitwise operations are very fast)
+- Scales well with a large number of permissions
+- More flexible than simple role-based checks
+- Enables fine-grained access control (per action)
+- Roles become easier to manage as collections of permissions
+- Reduces the need to create new roles for every small change
+- Decouples identity (role) from capability (permissions)
+
+### Cons
+- Less intuitive than string-based permissions (harder to read and debug)
+- Authorization logic can still become scattered across the codebase
+- Managing role-permission mappings becomes complex at scale
+- Still lacks context-awareness (e.g., ownership, time, location)
+- Cannot easily express rules like: *"a user can only edit their own post"*
+
+## Hybrid RBAC 
+It is combination of [Permission based RBAC](#permission-based-rbac) & [Bitmask Permission-Based RBAC](#bitmask-permission-based-rbac).  
+In this approach, we use string-based permissions for better readability & maintainability, while also leveraging bitmasking for efficient storage and quick permission checks.  
+In this approach we create map for permissions to bit positions:
+```typescript
+const PERMISSIONS = {
+  "post:create": 1 << 0, // 1
+  "post:edit": 1 << 1,   // 2
+  "post:delete": 1 << 2, // 4
+  "post:read": 1 << 3    // 8
+};
+```
+
+Roles are then defined as combinations of these permissions:
+```typescript
+const ROLES = {
+  ADMIN: PERMISSIONS["post:create"] | PERMISSIONS["post:edit"] | PERMISSIONS["post:delete"] | PERMISSIONS["post:read"], // 15
+  EDITOR: PERMISSIONS["post:create"] | PERMISSIONS["post:edit"] | PERMISSIONS["post:read"], // 11
+  VIEWER: PERMISSIONS["post:read"] // 8
+};
+```
+
+In the database, we typically store the user's role. Permissions are then derived using a role-permission mapping.
+In the backend, authorization is handled by applying middleware to routes, where each route specifies the required permission as a bitmask (using a readable bit-to-permission mapping). The middleware resolves the user's permissions from their token and performs a bitwise AND to check whether the required permission is present or not.
+In frontend the backend can send derived boolean flags such as `canView` or `canEdit`, computed from these bitmask checks. Access control is then implemented using simple conditional checks to show or hide UI elements accordingly.
+
+### Pros
+- More efficient & faster permission checks (bitwise operations are very fast)
+- Scales well with a large number of permissions
+- More flexible than simple role-based checks
+- Enables fine-grained access control (per action)
+- Roles become easier to manage as collections of permissions
+- Reduces the need to create new roles for every small change
+- Decouples identity (role) from capability (permissions)
+
+### Cons
+- Authorization logic can still become scattered across the codebase
+- Managing role-permission mappings becomes complex at scale
+- Still lacks context-awareness (e.g., ownership, time, location)
+- Cannot easily express rules like: *"a user can only edit their own post"*
+
+## Resource-Based Permissions
+The approaches we've covered so far can answer *"can this user edit posts?"* but none of them can answer *"can this user edit **this** post?"*  
+This is the limitation that keeps showing up in the cons of every previous approach. Resource-based permissions solve exactly that.  
+In this approach, permissions are tied to a specific resource instance, not just a resource type. Instead of checking if a user has the `post:edit` permission globally, we check if the user has that permission **on a particular post**.  
+The most common pattern is storing an `ownerId` (or similar) on the resource and checking it at authorization time:
+```typescript
+async function canEditPost(userId: string, postId: string) {
+  const post = await db.post.findUnique({ where: { id: postId } });
+  return post.ownerId === userId;
+}
+```
+
+This can also be extended to support shared ownership or explicit grants, where a resource stores a list of users and their allowed actions:
+
+```json
+// resource_permissions table
+{
+  "resourceType": "post",
+  "resourceId": "post_123",
+  "userId": "user_456",
+  "permission": "post:edit"
+}
+```
+
+On the backend, middleware alone is no longer sufficient. The authorization check requires the resource to be fetched first, so the check typically lives inside the route handler or a dedicated authorization service.  
+On the frontend, access control flags like `canEdit` or `canDelete` are best returned alongside the resource itself, since they are now resource-specific and cannot be derived from the user's role alone.
+```json
+// API response
+{
+  "post": { "id": "post_123", "title": "..." },
+  "permissions": {
+    "canEdit": true,
+    "canDelete": false
+  }
+}
+```
+
+### Pros
+- Solves the ownership problem that pure RBAC cannot handle
+- Fine-grained control down to individual resource instances
+- Clean separation between what a user can do globally vs. on a specific resource
+- Maps naturally to real-world access patterns (ownership, sharing, delegation)
+
+### Cons
+- Requires fetching the resource before authorization, adding latency
+- More complex to implement and reason about than role checks
+- Can lead to inconsistent authorization logic if not centralized
+- Harder to audit ("what can user X do?") since permissions are spread across resource records
+- Does not scale well for bulk operations or listing resources with mixed permissions
+
+
+## Hierarchical RBAC
+As organizations grow, roles start to stack on top of each other. A `super-admin` can do everything an `admin` can, an `admin` can do everything an `editor` can, and so on. Defining each role from scratch and duplicating permissions across them does not scale.  
+Hierarchical RBAC solves this by letting roles inherit permissions from other roles.  
+Instead of this:
+```typescript
+const ROLES = {
+  VIEWER: ["post:read"],
+  EDITOR: ["post:read", "post:create", "post:edit"],
+  ADMIN: ["post:read", "post:create", "post:edit", "post:delete", "user:manage"]
+};
+```
+
+You define a hierarchy where each role only declares what it adds on top of its parent:
+```typescript
+const ROLE_HIERARCHY = {
+  VIEWER: {
+    permissions: ["post:read"],
+    inherits: []
+  },
+  EDITOR: {
+    permissions: ["post:create", "post:edit"],
+    inherits: ["VIEWER"]
+  },
+  ADMIN: {
+    permissions: ["post:delete", "user:manage"],
+    inherits: ["EDITOR"]
+  }
+};
+```
+
+At authorization time, you resolve the full permission set by walking up the hierarchy:
+```typescript
+function resolvePermissions(role: string): string[] {
+  const { permissions, inherits } = ROLE_HIERARCHY[role];
+  const inherited = inherits.flatMap(parentRole => resolvePermissions(parentRole));
+  return [...new Set([...permissions, ...inherited])];
+}
+
+// resolvePermissions("ADMIN")
+// => ["post:delete", "user:manage", "post:create", "post:edit", "post:read"]
+```
+
+This can also be stored in the database to support dynamic role management:
+```typescript
+// roles table
+{ id: "editor", permissions: ["post:create", "post:edit"], inherits: ["viewer"] }
+
+// resolved at runtime by traversing the parent chain
+```
+
+On the backend, the middleware resolves the full permission set before performing the permission check, so the rest of the authorization logic stays the same.
+
+### Pros
+- Eliminates permission duplication across roles
+- Easier to manage and reason about as roles grow
+- Adding a new role only requires defining what it adds, not repeating everything
+- Maps naturally to real-world org structures (junior, senior, manager, etc.)
+- Works well with any of the permission storage approaches (string-based, bitmask, hybrid)
+
+### Cons
+- Resolving permissions requires traversing the hierarchy, adding overhead if not cached
+- Deep hierarchies can become hard to debug ("where did this permission come from?")
+- Circular inheritance is a real risk and needs to be guarded against
+- Still does not handle context-aware rules like ownership or time-based access
+
+## Attribute-Based Access Control (ABAC)
+Every approach so far has been asking the same question in different ways: *"what role or permissions does this user have?"*  
+ABAC asks a different question entirely:
+> "Given everything we know about the user, the resource, and the current context, should this action be allowed?"
+
+Instead of checking a role or a permission string, access decisions are based on **attributes**. Attributes of the user (department, role, id), attributes of the resource (status, owner, project), and attributes of the environment (time of day, day of week, location).  
+A rule in ABAC looks like this:
+```typescript
+// an editor in the engineering department
+// can update non-locked documents in their department's projects
+// but only on weekdays
+// and only the content and title fields
+builder.allow("document", "update", {
+  projectId: project.id,
+  isLocked: false,
+}, ["content", "title"])
+```
+
+The check at authorization time evaluates this rule against the actual resource data:
+```typescript
+can("document", "update", {
+  projectId: "proj_123",
+  isLocked: false,
+  status: "draft",
+  creatorId: "user_456"
+}, "content")
+```
+
+It walks through all matching rules and checks if the action, conditions, and requested field all satisfy at least one of them.  
+This also enables field-level access control. A viewer might be allowed to read a document, but only specific fields. An author might be allowed to update a draft, but only content and title, not status or isLocked.
+```typescript
+// strip the incoming update payload down to only what this user is allowed to change
+const safeUpdate = pickPermittedFields("document", "update", incomingData, resourceData)
+```
+
+And because the conditions are just data, they can also be converted directly into database query filters:
+```typescript
+// generate a WHERE clause from what the user is allowed to read
+const where = toDrizzleWhere("document", "read")
+// automatically scopes the query to only rows the user can access
+await db.document.findMany({ where })
+```
+This is powerful because it means you never have to manually filter query results for authorization. The permission rules and the database query stay in sync by construction.
+
+### Pros
+- Most expressive model, can encode almost any real-world access rule
+- Handles ownership, department, time, environment, and field-level control in one system
+- Permission rules double as database query filters, keeping data access scoped automatically
+- Scales well for complex domains without creating new roles for every edge case
+- Centralizes all authorization logic in one place
+
+### Cons
+- Significantly more complex to implement correctly
+- Rules can become hard to audit and reason about as they grow
+- Debugging access issues is harder ("why was this denied?")
+- Performance can degrade if rules require multiple database lookups to resolve
+- Requires discipline to keep the permission builder and resource schema in sync
+
+## Relationship-Based Access Control (ReBAC)
+Resource-based permissions let you check ownership. Hierarchical RBAC lets you inherit permissions through roles. But neither can answer questions like:
+> "Can this user access this document because they are a member of the team that owns it?"
+
+> "Can this user view this post because they follow the author?"
+
+This is where ReBAC comes in. Instead of checking what role a user has, or whether they own a resource, it checks **the relationship between the user and the resource**.  
+The core idea is modeling access as a graph, where nodes are users, groups, and resources, and edges are named relationships between them:
+```json
+// relationship tuples
+{ "subject": "user:alice", "relation": "member", "object": "team:engineering" }
+{ "subject": "team:engineering", "relation": "owner", "object": "document:roadmap" }
+```
+
+From these two tuples, the system can infer that alice can access `document:roadmap` because she is a member of the team that owns it. This is called a traversal through the relationship graph.  
+This is exactly the model behind Google Zanzibar, which powers access control for Google Drive, Docs, YouTube, and most of Google's product suite.  
+A permission check in ReBAC looks like this:
+```typescript
+// can alice edit document:roadmap?
+await check({
+  subject: "user:alice",
+  relation: "editor",
+  object: "document:roadmap"
+});
+```
+
+The system resolves this by walking the graph, following relationships until it can confirm or deny the check. Relationships can also be nested, so a group can contain groups, a team can own teams, and permissions propagate naturally.  
+Popular open-source implementations of this model include OpenFGA (by Okta) and SpiceDB (by Authzed), both inspired by Google Zanzibar.  
+A schema in OpenFGA looks like this:
+```text
+model
+  schema 1.1
+
+type user
+
+type team
+  relations
+    define member: [user]
+
+type document
+  relations
+    define owner: [team]
+    define editor: [user] or member from owner
+    define viewer: [user] or editor
+```
+
+With this schema, a single check call traverses the full graph and resolves access correctly, no matter how deep the relationship chain is.
+
+### Pros
+- Handles complex, real-world access patterns that RBAC simply cannot express
+- Permissions propagate naturally through relationships (groups, teams, orgs)
+- Scales well for collaborative and social products
+- Access control logic lives in one place (the schema), not scattered across the codebase
+- Proven at scale (Google Zanzibar handles trillions of checks per day)
+
+### Cons
+- Significantly more complex to implement and operate than RBAC
+- Requires maintaining a relationship store in sync with your main database
+- Graph traversal can be slow without aggressive caching and indexing
+- Harder to reason about for simple use cases where RBAC is more than enough
+- Steeper learning curve for the team
+
+## Permission Libraries / Engines
+Building your own permission system works, but at some point the complexity of managing rules, schemas, and checks across a growing codebase becomes a problem of its own. This is where dedicated permission libraries and engines come in.  
+Instead of writing and maintaining authorization logic yourself, you delegate it to a system purpose-built for that job.  
+There are two categories worth knowing:
+**Embedded libraries** run inside your application and give you a structured way to define and check permissions without building the engine yourself:
+- **[CASL](https://casl.js.org/)** - A popular JavaScript library for defining abilities. Works well for ABAC-style rules and has first-class support for frontend and backend.
+- **[Casbin](https://casbin.org/)** - A general-purpose authorization library supporting RBAC, ABAC, and custom models via a policy file. Available for most languages.
+- **[Permify](https://permify.co/)** - Inspired by Google Zanzibar, supports ReBAC with a schema-driven approach.
+
+**External authorization services** run as a separate service your application calls to resolve permission checks:
+- **[OpenFGA](https://openfga.dev/)** - Open source, Zanzibar-inspired, built by Okta. Best fit for ReBAC use cases.
+- **[SpiceDB](https://authzed.com/spicedb)** - Also Zanzibar-inspired, built by Authzed. Schema-driven relationship-based access control.
+- **[Ory Keto](https://www.ory.sh/keto/)** - Another open source Zanzibar implementation, integrates well with the broader Ory ecosystem.
+- **[AWS Verified Permissions](https://aws.amazon.com/verified-permissions/)** - Managed service using the Cedar policy language. Good fit if you are already deep in the AWS ecosystem.  
+A check against an external engine looks roughly like this:
+```typescript
+// instead of running authorization logic yourself,
+// you ask the engine
+const allowed = await fga.check({
+  user: "user:alice",
+  relation: "editor",
+  object: "document:roadmap"
+})
+
+if (!allowed) throw new ForbiddenError()
+```
+
+The tradeoff is that you are now making a network call on every permission check, so caching and latency become something you have to think about.
+
+### When to use a library or engine
+Not every app needs one. A rough guide:
+- Simple role checks or small permission sets -> build it yourself, the overhead is not worth it
+- Mid-sized app with growing permission complexity -> an embedded library like CASL or Casbin is a good fit
+- Collaborative product with shared resources, teams, and nested access -> a Zanzibar-inspired engine like OpenFGA or SpiceDB is the right tool
+- Multi-tenant SaaS or enterprise product with audit and compliance requirements -> a managed service is worth the cost
+
+### Pros
+- Proven, tested authorization logic you do not have to maintain
+- Usually come with audit logging, policy management, and tooling out of the box
+- Forces you to centralize authorization into a dedicated layer
+- Easier to reason about and debug than homegrown solutions at scale
+
+### Cons
+- External services add network latency to every permission check
+- Learning curve for each library's model and schema language
+- Can be overkill for simple applications
+- Vendor or ecosystem lock-in, especially with managed services
+- Migrating away later is non-trivial once your permission schema is deeply integrated
+
+## Which one should you use?
+There is no universal answer, it depends on where your app is and where it is going.  
+A rough guide:
+- Just starting out with 2-3 roles -> simple hardcoded checks are fine, do not over-engineer early
+- Mid-sized app with growing role complexity -> permission-based RBAC, with bitmask or hybrid if performance matters
+- Roles that mirror an org structure -> add hierarchical inheritance on top
+- Users owning and sharing resources -> resource-based permissions
+- Complex rules around departments, time, fields, and context -> ABAC
+- Collaborative product with teams, groups, and nested access -> ReBAC
+- Any of the above getting hard to maintain -> reach for a library or engine
+
+The mistake most teams make is picking the most sophisticated model upfront. You almost never need ReBAC or ABAC on day one. Start simple, and let the actual pain points of your system tell you when to evolve.  
+Authorization is not a feature you build once. It is a system that grows with your product. The goal is not to pick the perfect model, it is to pick the right one for right now, and design it in a way that lets you move to the next level when you need to.
