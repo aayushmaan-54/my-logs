@@ -1,0 +1,107 @@
+---
+title: Understanding Kafka Architecture
+author: Aayushmaan Soni
+slug: kafka-architecture
+pubDatetime: 2026-03-31T00:07:24.000+05:30
+draft: true
+featured: true
+tags: ["kafka", "architecture", "devops", "backend"]
+description: Kafka Architecture explained!
+timezone: Asia/Kolkata
+---
+
+## Table of Contents
+
+## Introduction
+- More than 80% of all Fortune 100 companies trust, and use Apache Kafka.
+- Apache Kafka is an open-source distributed event streaming platform used by thousands of companies for high-performance data pipelines, streaming analytics, data integration, and mission-critical applications.
+- https://kafka.apache.org/#apache-kafka
+- DB: More & Stable storage, Low Throughput, High Latency
+- Kafka: Less & Temporary / time-bounded storage, High Throughput, Low Latency
+
+## Broker 
+- physical server in a Kafka cluster
+- Contains one or more partitions of a topic
+- Not necessarly it contain partion of one topic, it can contain partion of multiple topics
+
+## What are topics in Kafka?
+- Not like topics in pub sub arch.
+- named, categorized, append-only log
+- like a folder in a file system
+- Topics are divided into partitions for scalability and parallelism
+- Logical seperation of data stored
+
+## Partitions 
+- Each topic is divided into one or more partitions
+- Each partition is an ordered, immutable sequence of messages that is continually appended to as new messages are produced
+- Each partition is identified by a unique ID (partition number)
+- Partitions allow Kafka to scale horizontally by distributing data across multiple brokers
+- If we dont have partitions concept lets say then if we have 1000 messages and 1 partition then that partition will have to handle all the messages but if we have 10 partitions then each partition will handle only 100 messages which is more efficient and faster
+- When reading partitions data an offset is maintained which is a unique identifier for each message in the partition, allowing consumers to keep track of their position in the log and read messages in order
+- It is so if for x reason a consumer fails or restarts, it can resume consuming from the last committed offset, ensuring that messages are not lost and are processed in the correct order.
+- This appending nature of partitions allows kafka to replay messages
+- alos we can set policy for how long we wnat to retian message it cna depend on time, storage size or number of messages.
+
+## How producer define which partition to send data to?
+- By default: Round Robin
+- Custom partitioning logic: based on message key (e.g., user ID, order ID) to ensure messages with the same key are sent to the same partition, enabling ordered processing for related messages. (hash(key) % numPartitions)
+
+## Kafka Cluster
+- Group of one or more brokers.
+- We can have one or multiple kafka clusters in an organization, depending on the scale and requirements of the applications using Kafka.
+- Each cluster is identified by a unique name and can be configured with various settings, such as replication factor, retention policies, and security settings.
+
+## Replication
+- Kafka provides fault tolerance and high availability through replication.
+- Each partition can be replicated across multiple brokers in the cluster, creating multiple copies of the data
+- One broker is designated as the leader for each partition, while the others are followers that replicate
+the leader's data.
+- If the leader broker fails, one of the followers can automatically take over as the new leader, ensuring that the partition remains available and that data is not lost.
+- It is done by ISR (In-Sync Replicas): a set of replicas that are fully caught up with the leader and are eligible to become the new leader if the current leader fails.
+- A list of all ISR replicas is maintained for each partition, and the leader ensures that all followers in the ISR are up to date with the latest data before acknowledging a write operation as successful.
+- Heartbeat mechanism is used to monitor the health of brokers and ensure that followers are in sync with the leader. If a follower fails to send a heartbeat within a specified interval, it is removed from the ISR, and if the leader fails, one of the remaining followers in the ISR is promoted to be the new leader.
+
+## Producer ACK
+- Acknowledgment mechanism used by producers to ensure that messages are successfully written to the Kafka cluster.
+- When a producer sends a message to a Kafka topic, it can specify the level of acknowledgment
+- ACK=0: fire & forgot. Fastest but no guarantee of delivery.
+- ACK=1: Wait for leader to acknowledge. Provides a balance between performance and reliability.
+- ACK=all: Wait for all in-sync replicas to acknowledge. Provides the highest level of reliability but can be slower.
+
+## Consumer & Consumer Group
+- Service that responds to messagess from kafka
+- It subscribes to one or more topics and processes the messages as they arrive
+- kafka maintains `__consumer_offsets` topic to track the offset of each consumer group for each partition, allowing consumers to resume from where they left off in case of failures or restarts.
+- Kafka assign 1 consumer to 1 partition at a time. there cant be multiple consumers consuming 1 partition.
+- so if lets say we have 3 partitions and 2 consumer then 1 consumer will consume 2 partitions and 1 consumer will consume 1 partition. 
+- If we have 3 partitions and 3 consumer then each consumer will consume 1 partition and all partitions will be consumed.
+- If we have 3 partitions and 4 consumer then 3 consumer will consume 3 partitions and 1 consumer will be idle.
+- So to utilize all the consumers we need to have number of partitions >= number of consumers in the consumer group.
+- Kafka have something called consumer group which is like group of consumers, in each group partition gets assigned to each group like we discuss above ex:
+  - We have 2 consumer groups: group A and group B
+  - in group A we have 3 consumers and in group B we have 2 consumers
+  - we have 3 partitions in the topic
+  - So in group A, each consumer will consume 1 partition and all partitions will be consumed. In group B, 2 consumers will consume 2 partitions and 1 partition will be left unconsumed.
+  - Workload of partitions is distributed in group level not in consumer level.
+  - but you will think why this isnt it wiered & why overcomplicating things but there is reason for it cuz it now can act as queue and pub sub both.
+  - For group A it is like queue because each message will e consumed by unqiue consumer but for group B it is like pub sub because each message will be consumed by multiple consumers.
+
+## Zookeeper (deprecated in newer versions)
+- seperate service kafka used to rely on for cluster coordination, leader election, and metadata management.
+- It was responsible for maintaining the state of the cluster, tracking which brokers are alive, and managing the configuration of topics and partitions.
+- It is huge pain cuz it is separate service and we have to maintain it separately and it can be single point of failure if not configured properly.
+- Also it struggle with large amount of data, also why rely on another service for something that can be done internally by kafka itself.
+
+## KRaft (Kafka Raft Metadata mode)
+- KRaft is a new metadata management mode introduced in Apache Kafka 2.8.
+- It replaces the need for Zookeeper by using an internal Raft-based consensus algorithm to manage cluster metadata and coordination.
+- KRaft provides improved scalability, fault tolerance, and simplified deployment by eliminating the dependency on an external service for metadata management.
+- With KRaft, Kafka can manage its own metadata, including topic configurations, partition assignments, and cluster state, without relying on Zookeeper
+- consensus algorithm: a protocol to achieve aggrement among distributed systems(leader election from followers, log replication, fault tolerance)
+- Raft-based consensus algorithm: leader send hearbeat to followers in regular interval, if follwer dont recive heartbeat for certain time then it assume leader is down and start elelction process to elect new leader
+- kRaft also provides better performance and scalability compared to Zookeeper, as it is designed to handle the high throughput and low latency requirements of modern data streaming applications.
+
+## When do we actually use kafka?
+- When we have data comming at high throughput and we need to process it in real-time or near real-time.
+- Multiple consumer need same event
+- You need decoupling of producers and consumers at scale
