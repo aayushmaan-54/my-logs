@@ -12,38 +12,44 @@ description: A complete guide to setup Windows as a powerful Linux dev machine
 ## Table of Contents
 
 ## Introduction
+
 Ever felt limited while coding on Windows?
 Like things work, but not in the smooth way you see Linux users working.  
 At the same time, switching to Linux full-time is hard because some software only runs on Windows, or you're into gaming like me, and Windows still has the best support for that (typical Microsoft stuff).  
 That's where **WSL2** comes in.  
 In this blog, I'll show you how to set up **WSL2** to run Linux inside Windows, configure **ZSH** to make your terminal cleaner and more powerful, and set up multiple **GitHub SSH keys** so you can easily manage different accounts.  
 This setup gives you the best of both worlds.  
-Linux for development and Windows for everything else(especially gaming :&lt;). 
+Linux for development and Windows for everything else (especially gaming :<).
 
-## Installing WSL2 
+## Installing WSL2
+
 Before installing **WSL2** on your Windows machine, there are a few things you need to have:
+
 - Windows 10 (Build 19041+) or Windows 11 (Obviously)
 - Administrator access
 - Virtualization enabled in BIOS/UEFI (Follow any tutorial its pretty easy)
-- Windows terminal
-- VS Code (env-var should exsist & install wsl extension by Microsoft)
+- Windows Terminal
+- VS Code (env-var should exist & install WSL extension by Microsoft)
 
 ### Installing WSL2 & Ubuntu
+
 Open **PowerShell as Administrator** and run:
 
 ```bash
 wsl --install
-``` 
+```
 
 This command will:
+
 - Enable WSL feature
 - Enable Virtual Machine Platform
 - Install Ubuntu (default distro)
 - Set WSL2 as default version
 
 Restart your computer when prompted.  
-After restart terminal will automatically open **ubuntu** in **WSL2** and you will be prompted to create *username* and *password* remember them well as it will be helpful in future.  
-Few Commands to remember for WSL2 that might be helpful
+After restart the terminal will automatically open **Ubuntu** in **WSL2** and you will be prompted to create a *username* and *password* — remember them well as they will be needed in the future.  
+
+Few commands to remember for WSL2 that might be helpful:
 
 ```bash
 # Start WSL
@@ -52,7 +58,7 @@ wsl
 # See available distributions
 wsl --list --online
 
-# Start specific destro
+# Start specific distro
 wsl -d Ubuntu-24.04
 
 # Check WSL version
@@ -64,7 +70,7 @@ wsl --install -d Ubuntu-24.04
 # Uninstall Ubuntu 24.04 LTS
 wsl --unregister Ubuntu-24.04
 
-# Stop all WSL instance (Very useful when WSL feel buggy)
+# Stop all WSL instances (Very useful when WSL feels buggy)
 wsl --shutdown
 
 # Set WSL default distro
@@ -74,198 +80,260 @@ wsl --set-default Ubuntu
 wsl --update
 ```
 
-If you face problem installing WSL you can also install it via **Microsoft Store** but i would recommend install it via *CLI* as it gives more control and you know better what is going on.
+If you face problems installing WSL you can also install it via **Microsoft Store**, but I would recommend installing it via *CLI* as it gives more control and you know better what is going on.
 
 #### Updating Linux
-After setting up username and password you will be inside ubuntu next you need to update ubuntu sourcelist and upgrade the distro with updated list
+
+After setting up username and password you will be inside Ubuntu. Next you need to update the source list and upgrade the distro:
+
 ```bash
 sudo apt update && sudo apt upgrade -y
 ```
-Enter your password when prompted
- 
+
+Enter your password when prompted.
+
 You can create a `.wslconfig` file where you can allocate WSL resources such as memory, storage or processor.
 
-#### Installing Oh My Zsh (Optional but Recommended)
-A clean, step-by-step guide to transforming your terminal with Zsh, Powerlevel10k, and essential plugins.  
+#### Setting Up Zsh + Starship
 
-Inside Ubuntu, follow these steps.
+We'll use **Zsh** as our shell with **Starship** as the prompt — minimal, fast, and looks great with JetBrains Mono.
 
-##### Install Nerd Fonts
-For the icons and symbols in the theme to render correctly, you need a Nerd Font installed.  
-**Download and Extract:**
-```bash
-mkdir temp && cd temp
+##### 1. Install JetBrains Mono Font
 
-curl -L -o Meslo.zip https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/Meslo.zip
+The font needs to be installed on **Windows** (not inside WSL), so that Windows Terminal can use it.
 
-unzip Meslo.zip -d MesloFonts
-```
+Download JetBrains Mono from the official site: [jetbrains.com/lp/mono](https://www.jetbrains.com/lp/mono/)
 
-**Install Fonts to System:**
-```bash
-sudo mkdir -p /usr/share/fonts/truetype/meslo-nerd
+Extract the zip, select all `.ttf` files inside the `fonts/ttf/` folder, right-click and choose **Install for all users**.
 
-sudo cp MesloFonts/*.ttf /usr/share/fonts/truetype/meslo-nerd/
+After installing, open Windows Terminal settings and set the font:
 
-sudo fc-cache -fv
-```
+> Settings → Profiles → Ubuntu → Appearance → Font face → **JetBrains Mono**
 
-**Cleanup:**
-```bash
-cd .. && rm -rf temp
-```
+##### 2. Install Zsh
 
-> **Note:** After running these, go to your Terminal Settings and set the font to **MesloLGS NF**.
-
-##### 2. Install Zsh and Git
-First, ensure your package manager is up to date and install the requirements.
 ```bash
 sudo apt update
-sudo apt install zsh git -y
-```
-
-**Set Zsh as Default:**
-```bash
+sudo apt install zsh -y
 chsh -s $(which zsh)
 ```
-*Note: You may need to log out and back in (or restart WSL) for this to take effect.*
 
-##### 3. Install Oh My Zsh
-Run the official installation script:
+Close and reopen your terminal (or restart WSL) for the shell change to take effect.
 
-```bash
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-```
-
-##### 4. Install Powerlevel10k Theme
-Clone the repository into the Oh My Zsh custom themes folder:
+##### 3. Install Plugins Manually
 
 ```bash
-git clone --depth=1 https://github.com/romkatv/powerlevel10k.git${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+mkdir -p ~/.zsh
+git clone https://github.com/zsh-users/zsh-autosuggestions ~/.zsh/zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.zsh/zsh-syntax-highlighting
 ```
 
-**Activate Theme:**
-Open your `.zshrc` file:
+##### 4. Install Starship
+
+```bash
+curl -sS https://starship.rs/install.sh | sh
+```
+
+##### 5. Configure .zshrc
+
+Create or open your `.zshrc`:
+
 ```bash
 nano ~/.zshrc
 ```
 
-Find `ZSH_THEME="robbyrussell"` and change it to:
-```bash
-ZSH_THEME="powerlevel10k/powerlevel10k"
+Paste the full config:
+
+```zsh
+HISTSIZE=10000
+SAVEHIST=10000
+HISTFILE=~/.zsh_history
+setopt histignorealldups sharehistory
+setopt hist_ignore_space        # commands prefixed with a space won't be saved (useful for secrets)
+setopt auto_cd                  # type a directory name to cd into it
+setopt correct                  # suggest corrections for mistyped commands
+setopt interactive_comments     # allow comments in interactive shell (# like this)
+
+bindkey -v
+KEYTIMEOUT=1
+
+# Cursor shape for vi mode (block in normal, beam in insert)
+function zle-keymap-select {
+  if [[ $KEYMAP == vicmd ]]; then
+    echo -ne '\e[2 q'
+  else
+    echo -ne '\e[6 q'
+  fi
+}
+zle -N zle-keymap-select
+echo -ne '\e[6 q'
+
+# Restore text search in vi mode (ctrl+r)
+bindkey '^R' history-incremental-search-backward
+
+autoload -Uz compinit
+compinit
+
+zstyle ':completion:*' auto-description 'specify: %d'
+zstyle ':completion:*' completer _expand _complete _correct _approximate
+zstyle ':completion:*' menu select=long
+zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*'
+zstyle ':completion:*' verbose true
+zstyle ':completion:*' list-prompt '%SAt %p: Hit TAB for more%s'
+zstyle ':completion:*' select-prompt '%SScrolling: %p%s'
+
+eval "$(dircolors -b)"
+zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
+
+# Aliases
+alias ls='ls --color=auto'
+alias ll='ls -lah'
+alias grep='grep --color=auto'
+alias gs='git status'
+alias gd='git diff'
+alias gl='git log --oneline --graph --decorate'
+alias ..='cd ..'
+alias ...='cd ../..'
+
+# Arrow key history search
+autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+bindkey '^[[A' up-line-or-beginning-search
+bindkey '^[[B' down-line-or-beginning-search
+
+# Auto-start ssh-agent and add keys on new session
+if [ -z "$SSH_AUTH_SOCK" ]; then
+  eval "$(ssh-agent -s)" > /dev/null
+  ssh-add ~/.ssh/id_personal 2>/dev/null
+  ssh-add ~/.ssh/id_office 2>/dev/null
+fi
+
+# Git wrapper — auto-routes clone to correct GitHub account based on folder
+git() {
+  if [[ "$1" == "clone" && "$PWD" == "$HOME/office"* ]]; then
+    shift
+    local rewritten=("${@/git@github.com:/git@github-office:}")
+    command git clone "${rewritten[@]}"
+  else
+    command git "$@"
+  fi
+}
+
+source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+eval "$(starship init zsh)"
 ```
 
-##### 5. Add Productivity Plugins
-These plugins add "fish-like" autosuggestions and syntax highlighting.
+Apply it:
 
-```bash
-# Autosuggestions
-git clone https://github.com/zsh-users/zsh-autosuggestions${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-
-# Syntax Highlighting
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-
-# History Substring Search
-git clone https://github.com/zsh-users/zsh-history-substring-search${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-history-substring-search
-```
-
-##### 6. Finalize Configuration
-Update your plugin list in `~/.zshrc`:
-
-```bash
-plugins=(
-  git
-  zsh-autosuggestions
-  zsh-syntax-highlighting
-  zsh-history-substring-search
-)
-```
-
-**Apply Changes:**
 ```bash
 source ~/.zshrc
 ```
 
-If the Powerlevel10k configuration wizard doesn't start automatically, run:
-```bash
-p10k configure
-```
-
 #### Install Essential Development Tools
+
 Inside Ubuntu:
+
 ```bash
 # Git
 sudo apt install git -y
 
-#Build essentials
+# Build essentials
 sudo apt install build-essential -y
 
-# Install Node.js, Docker(Might need to do some config for WSL), Python, MongoDB(Compass, MongoShell, mongodb-database-tools): Just Google these they are pretty simple and too the point
-``` 
+# Install Node.js, Docker (might need some config for WSL), Python, MongoDB
+# (Compass, MongoShell, mongodb-database-tools): Just Google these, they are pretty simple and to the point
+```
 
-## WSL File structure
-In WSL Windows drives are mounted at `/mnt/`:
+## WSL File Structure
+
+In WSL, Windows drives are mounted at `/mnt/`:
 
 ```bash
 cd /mnt/c/Users/YourUsername
 ```
 
-To access your linux distro files you can either type this in address bar of windows explorer
+To access your Linux distro files you can either type this in the address bar of Windows Explorer:
 
-```bash
+```
 \\wsl.localhost\
 ```
 
-Or you can see Linux on left side sidebar you can go from there also
+Or you can see Linux on the left side sidebar and go from there.
 
-## Setting up WSL distro as default terminal
-To set your linux distro as your default terminal profile:
-`Settings → Startup → Default profile → Ubuntu`  
-Customize Ubuntu profile
+## Setting Up WSL Distro as Default Terminal
+
+To set your Linux distro as your default terminal profile:
+
+`Settings → Startup → Default profile → Ubuntu`
+
+Customize Ubuntu profile:
+
 - Settings → Profiles → Ubuntu-24.04
 - Set starting directory: `\\wsl.localhost\Ubuntu\home\YourUsername`
 - Customize appearance, colors, fonts, etc.
 
 ## Git Multiple Account Setup
+
 In this section, we'll set up multiple Git identities (office and personal) using SSH in a way that **does not require changing the clone command every time**.  
+
 Normally, when using multiple SSH keys, you have to clone repositories like this:
+
 ```bash
-git@git-office:username/repository.git
+git clone git@github-office:username/repository.git
 ```
+
 This works, but it's annoying to remember and easy to mess up.
-In this setup, we'll configure SSH so that you can simply run:
+
+In this setup, we'll configure things so that you can simply run the normal clone command:
+
 ```bash
-git@github.com:username/repository.git
+git clone git@github.com:username/repository.git
 ```
-…and Git will automatically use the correct SSH key based on where the project is located.  
-No aliases.  
-No custom clone commands.  
-No manual switching.  
+
+…and Git will automatically use the correct SSH key and identity based on which folder you're in.  
+No aliases. No custom clone commands. No manual switching.
 
 ### Folder Rule (Important)
-To make this work smoothly, we'll follow one simple rule:
-- All office projects will live inside `~/office/` (or any folder of your choice)
-- Everything outside this folder will be treated as personal work
-- Before following [Setup](#setup) make sure you have office project directory and use that thorughout
 
-Based on this, Git will automatically pick the correct identity and SSH key.
+To make this work smoothly, we follow one simple rule:
+
+- All **office** projects live inside `~/office/`
+- Everything **outside** this folder is treated as personal work
+
+Based on this, Git automatically picks the correct identity and SSH key — both at clone time and for all subsequent operations like push, pull, and fetch.
+
+<Callout type="info">
+Create your `~/office/` directory before starting the setup and always clone work repos from inside it.
+</Callout>
+
+### Why This Is Tricky
+
+Git's `includeIf "gitdir:..."` config rule only activates **after** a `.git` directory exists inside the matched path. During `git clone`, there is no `.git` directory yet — Git hasn't created it — so the conditional block never loads and the wrong SSH key gets used.
+
+We solve this with a small shell function in `.zshrc` that intercepts `git clone` and rewrites the URL before Git ever touches the network.
 
 ### Setup
-#### 1. Generate SSH Keys
-```bash
-ssh-keygen -t ed25519 -C "personal@gmail.com"
-# Save as: /home/USERNAME/.ssh/id_personal
 
-ssh-keygen -t ed25519 -C "office@company.com"
-# Save as: /home/USERNAME/.ssh/id_office
+#### 1. Generate SSH Keys
+
+```bash
+ssh-keygen -t ed25519 -C "personal@gmail.com" -f ~/.ssh/id_personal
+ssh-keygen -t ed25519 -C "office@company.com" -f ~/.ssh/id_office
 ```
 
+Press Enter to skip the passphrase, or set one for extra security.
+
 #### 2. Set Permissions
+
 ```bash
 chmod 600 ~/.ssh/id_personal ~/.ssh/id_office
 ```
 
-#### 3. Add keys to SSH Agent
+#### 3. Add Keys to SSH Agent
+
 ```bash
 eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/id_personal
@@ -273,13 +341,14 @@ ssh-add ~/.ssh/id_office
 ```
 
 #### 4. Configure SSH
+
 ```bash
 nano ~/.ssh/config
 ```
 
 Add:
 
-```bash
+```
 # Personal GitHub
 Host github-personal
     HostName github.com
@@ -295,92 +364,147 @@ Host github-office
     AddKeysToAgent yes
 ```
 
+```bash
+chmod 600 ~/.ssh/config
+```
+
 #### 5. Add Public Keys to GitHub
+
 ```bash
 cat ~/.ssh/id_personal.pub  # Copy to personal GitHub account
 cat ~/.ssh/id_office.pub    # Copy to work GitHub account
 ```
 
-Add these public keys to each github account (Settings → SSH and GPG Keys → New SSH Keys)
+Add these public keys to each GitHub account:
+**Settings → SSH and GPG Keys → New SSH Key**
 
 #### 6. Test Connections
+
 ```bash
-ssh -T git@github-personal
-ssh -T git@github-office
+ssh -T git@github-personal   # should say: Hi <personal-username>!
+ssh -T git@github-office     # should say: Hi <work-username>!
 ```
 
-#### 7. Setup Git Configs
-Personal Config (default):
+#### 7. Configure Git Identities
+
+**Global config (personal as default):**
+
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "personal@gmail.com"
+git config --global init.defaultBranch main
+```
+
+Then open `~/.gitconfig` and add the `includeIf` rule at the bottom:
+
 ```bash
 nano ~/.gitconfig
 ```
 
-Add:
-
-```bash
-[user]
-    name = Your Name
-    email = personal@gmail.com
-
-[url "git@github-personal:"]
-    insteadOf = git@github.com:
-
-[url "git@github-personal:"]
-    insteadOf = https://github.com/
-
-[includeIf "gitdir:/home/USERNAME/office/"]
-    path = /home/USERNAME/.gitconfig-office
+```ini
+[includeIf "gitdir:~/office/"]
+    path = ~/.gitconfig-office
 ```
 
 <Callout type="warning">
-Path in `includeIf` must end with `/`
+The path in `includeIf` must end with `/` otherwise it won't match.
 </Callout>
 
-Work Config:
+**Work config:**
+
 ```bash
 nano ~/.gitconfig-office
 ```
 
-Add:
-
-```bash
+```ini
 [user]
     name = Your Name
     email = office@company.com
-
-[url "git@github-office:"]
-    insteadOf = git@github.com:
-
-[url "git@github-office:"]
-    insteadOf = https://github.com/
 ```
 
-#### 8. Verify Setup
-To verify your whole setup make sure you are first inside your personal project folder where git is initialized or is git repository run `git config user.email` and you should see your personal email and in your office project directory you should do same and you will see office email.
+#### 8. The Clone-Time Fix (The Key Part)
+
+The `includeIf` rule handles identity for all git operations **inside an existing repo**. But during `git clone`, there's no `.git` directory yet, so it doesn't apply. We fix this with a shell function already included in the `.zshrc` above:
+
+```zsh
+git() {
+  if [[ "$1" == "clone" && "$PWD" == "$HOME/office"* ]]; then
+    shift
+    local rewritten=("${@/git@github.com:/git@github-office:}")
+    command git clone "${rewritten[@]}"
+  else
+    command git "$@"
+  fi
+}
+```
+
+What this does:
+
+- Intercepts any `git clone` call made from inside `~/office/`
+- Rewrites `git@github.com:` to `git@github-office:` in the URL
+- Passes the rewritten URL to the real git binary
+- Every other git command passes through completely untouched
+
+#### 9. Verify Setup
+
+```bash
+# Test cloning a personal repo (from anywhere outside ~/office)
+cd ~
+git clone git@github.com:your-personal-username/some-repo.git
+
+# Test cloning a work repo (from inside ~/office)
+cd ~/office
+git clone git@github.com:your-org/private-repo.git
+
+# Check identity inside a personal repo
+cd ~/some-repo
+git config user.email   # should show personal email
+
+# Check identity inside an office repo
+cd ~/office/private-repo
+git config user.email   # should show work email
+```
+
+### How It All Works Together
+
+| Stage | What handles it | Result |
+|---|---|---|
+| `git clone` inside `~/office/` | Shell function rewrites URL | SSH uses `~/.ssh/id_office` |
+| Any git op on a repo in `~/office/` | `includeIf` loads `~/.gitconfig-office` | Work email on commits, office SSH key |
+| Everything outside `~/office/` | Global `~/.gitconfig` only | Personal email, personal SSH key |
+| New terminal session | `ssh-agent` block in `.zshrc` | Both keys are loaded automatically |
 
 ## Working with WSL in VS Code
+
 After installing WSL and the WSL extension in VS Code, the next step is using it the right way.  
+
 A common mistake is opening projects from the Windows filesystem and assuming they are running in WSL.  
-That's not true.   
-To properly use WSL, your project must live **inside the Linux filesystem**, not inside `C:`.  
+That's not true.  
+
+To properly use WSL, your project must live **inside the Linux filesystem**, not inside `C:`.
 
 ### Open a Project in WSL
-1. Open VS Code  
-2. Press `Ctrl + Shift + P`  
-3. Search for `WSL: Open Folder in WSL`  
-4. Select a folder inside Linux  
+
+1. Open VS Code
+2. Press `Ctrl + Shift + P`
+3. Search for `WSL: Open Folder in WSL`
+4. Select a folder inside Linux
 
 Once opened, you'll see **WSL: Ubuntu** in the bottom-left corner.
 
 ### Alternative Way
+
 You can also open a project directly from the WSL terminal:
+
 ```bash
 cd ~/.../your-project
 code .
 ```
 
 ### Important Note
-Avoid working inside:  
+
+Avoid working inside:
+
 ```
 /mnt/c/Users/...
 ```
@@ -392,13 +516,16 @@ Always work inside:
 ```
 
 Working from Windows folders slows things down and can cause permission issues.  
-Also, always commit your code before experimenting with WSL.
+Also, always commit your code before experimenting with WSL.  
 If something breaks, recovery can be difficult.
 
 ## Conclusion
+
 With this setup, you get the best of both worlds.  
 The power of Linux for development, and the flexibility of Windows for software that still needs it, including modern games.  
+
 This is the exact setup I use daily. It lets me work comfortably without having to compromise on development quality or give up things I enjoy, like gaming.  
+
 One small request to software vendors and game studios:  
 please give the same level of priority to Linux as you do to Windows. A lot of developers want to move, but support is still the biggest blocker.  
 Until then, WSL is the perfect middle ground.
